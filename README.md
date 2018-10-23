@@ -2,6 +2,7 @@
 
 1. Установить [meteor](https://www.meteor.com/install).
 0. Добавить ssh ключ в [gitlab](https://gitlab.com/profile/keys).
+3. Скачайте [vs code](https://code.visualstudio.com/) и установите дополение Prettier.
 
 # Запуск 
 
