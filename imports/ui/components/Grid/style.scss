@@ -1,9 +1,29 @@
 .grid {
   padding-top: 1px;
   padding-left: 50px;
+  position: relative;
 }
 
 .grid__row {
-  height: 100px;
+  height: 60px;
   border-bottom: 1px gray solid;
+}
+
+.columns {
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 50px;
+}
+
+.columns__item {
+  flex: 1;
+  height: 901px;
+  border-right: 1px gray solid;
+}
+
+.columns__line-wrapper {
+  padding-right: 5px;
+  height: 100%;
 }

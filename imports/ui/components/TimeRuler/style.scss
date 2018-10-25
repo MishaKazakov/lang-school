@@ -4,14 +4,19 @@
   flex-direction: column;
   width: 50px;
   border-bottom: 1px gray solid;
+  margin-top: -1px;
 }
 
-.time-ruler__item {
+.time-ruler__hour {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100px;
+  height: 60px;
   border: 1px gray solid;
   border-bottom: none;
+
+  &:first-child {
+    height: 61px;
+  }
 }

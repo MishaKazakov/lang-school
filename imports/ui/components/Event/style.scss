@@ -1,0 +1,25 @@
+.event {
+  position: relative;
+  min-height: 45px;
+  padding: 5px;
+  overflow: hidden;
+  background-color: aquamarine;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.event__name {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  overflow: hidden;
+  flex: 0 1 auto;
+}
+
+.event__time {
+  margin-top: 22px;
+}
+
+.event__audience {
+  margin-top: 5px;
+}
