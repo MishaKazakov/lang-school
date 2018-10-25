@@ -7,21 +7,24 @@ interface IProps {
   className?: string;
 }
 
-class Weekdays extends React.Component<IProps> {
-  createWeek = () => {
-    let day = this.props.startDay;
-    let week = [];
+const dayNames = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
 
-    for (let i = 0; i < 7; i++) {
-      week.push(day.getDate() + i);
+class Weekdays extends React.Component<IProps> {
+  getWeek = (day: Date) => {
+    let week = [];
+    week.push(day.getDate());
+
+    for (let i = 0; i < 6; i++) {
+      day.setDate(day.getDate() + 1);
+      week.push(day.getDate());
     }
+
     return week;
   };
 
   render() {
-    const week = this.createWeek();
-    const dayNames = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
-    const { className } = this.props;
+    const { className, startDay } = this.props;
+    const week = this.getWeek(new Date(startDay));
 
     return (
       <div className={cx("weekdays", className)}>

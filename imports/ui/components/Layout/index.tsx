@@ -8,10 +8,6 @@ interface IProps {
 }
 
 class Layout extends React.Component<IProps> {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const { children } = this.props;
 

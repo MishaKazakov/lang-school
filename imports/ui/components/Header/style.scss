@@ -4,4 +4,20 @@
 
 .header__text {
   font-size: 40px;
+  text-decoration: none;
+
+  & + & {
+    padding-left: 20px;
+  }
+
+  &:visited,
+  &:hover,
+  &:active,
+  &:link {
+    color: inherit;
+  }
+}
+
+.header__text_active {
+  text-decoration: underline;
 }
