@@ -1,0 +1,15 @@
+.attendance {
+  padding-left: 30px;
+}
+
+.attendance__day {
+  padding: 10px 0;
+  & + & {
+    padding: 0 0 10px;
+  }
+}
+
+.attendance__groups {
+  height: 100%;
+  display: flex;
+}

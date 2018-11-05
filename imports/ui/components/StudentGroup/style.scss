@@ -1,0 +1,26 @@
+.student-group {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 20px;
+  border-right: 1px solid gray;
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.student-group__title {
+  text-align: center;
+}
+
+.student-group__wrapper {
+  text-align: center;
+}
+
+.student-group__student {
+  display: inline-block;
+  padding: 1px 3px;
+  margin-top: 5px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  cursor: pointer;
+}
