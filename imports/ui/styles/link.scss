@@ -1,0 +1,13 @@
+.pseudo-link {
+  color: #1890ff;
+  background-color: transparent;
+  text-decoration: none;
+  outline: none;
+  cursor: pointer;
+
+  &:hover {
+    color: #40a9ff;
+    outline: 0;
+    text-decoration: none;
+  }
+}

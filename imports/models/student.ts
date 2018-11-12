@@ -1,6 +1,10 @@
 export interface IStudent {
   _id: string;
-  fistName: string;
+  firstName: string;
   lastName: string;
   miss: number[];
+  group: {
+    _id: string;
+    name: string;
+  }[]
 }

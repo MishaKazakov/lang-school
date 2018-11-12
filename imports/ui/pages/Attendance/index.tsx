@@ -19,27 +19,31 @@ const event = {
 const students = [
   {
     _id: "1",
-    fistName: "Дима",
+    firstName: "Дима",
     lastName: "Васнецов",
-    miss: []
+    miss: [],
+    group: [{ _id: "1", name: "Английский" }]
   },
   {
     _id: "2",
-    fistName: "Вася",
+    firstName: "Вася",
     lastName: "Савельев",
-    miss: []
+    miss: [],
+    group: [{ _id: "1", name: "Английский" }]
   },
   {
     _id: "3",
-    fistName: "Евгений",
+    firstName: "Евгений",
     lastName: "Онегин ",
-    miss: []
+    miss: [],
+    group: [{ _id: "1", name: "Английский" }]
   },
   {
     _id: "4",
-    fistName: "Захар",
+    firstName: "Захар",
     lastName: "Медведев",
-    miss: [1]
+    miss: [1],
+    group: [{ _id: "1", name: "Английский" }]
   }
 ];
 
