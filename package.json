@@ -24,6 +24,7 @@
     "indexof": "0.0.1",
     "meteor-node-stubs": "^0.4.1",
     "react": "^16.5.2",
+    "react-calendar": "^2.17.5",
     "react-dom": "^16.5.2",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
