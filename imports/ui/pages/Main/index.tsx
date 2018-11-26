@@ -1,6 +1,7 @@
 import * as React from "react";
 import Layout from "../../components/Layout";
 import Schedule from "../../components/Schedule";
+import Panel from "../../components/Panel";
 import Calendar from "react-calendar";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
@@ -42,6 +43,7 @@ class Main extends React.Component<null, IState> {
               prev2Label={null}
               next2Label={null}
             />
+            <Panel />
           </div>
           <Schedule date={day} />
         </div>

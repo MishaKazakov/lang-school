@@ -1,0 +1,23 @@
+.panel-menu {
+  padding: 0 10px;
+}
+
+.panel-menu__list {
+  padding: 5px 10px;
+}
+
+.panel-menu__link {
+  color: #444444;
+  text-decoration: none;
+
+  &:hover {
+    color: #666666;
+  }
+}
+
+.panel-menu__link_selected {
+  text-decoration: underline;
+  &:hover {
+    text-decoration: underline;
+  }
+}

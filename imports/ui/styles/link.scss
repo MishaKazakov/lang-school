@@ -1,4 +1,4 @@
-.pseudo-link {
+.link {
   color: #1890ff;
   background-color: transparent;
   text-decoration: none;
@@ -6,7 +6,7 @@
   cursor: pointer;
 
   &:hover {
-    color: #40a9ff;
+    color: #52aefa;
     outline: 0;
     text-decoration: none;
   }

@@ -14,7 +14,7 @@ class Students extends React.Component {
       <Layout>
         <div className={cx("students")}>
           <div className={cx("students__add")}>
-            <span onClick={this.addStudent} className={cx("pseudo-link")}>
+            <span onClick={this.addStudent} className={cx("link")}>
               Добавить студента
             </span>
           </div>
