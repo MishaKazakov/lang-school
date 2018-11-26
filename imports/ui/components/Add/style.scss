@@ -1,0 +1,17 @@
+.add {
+  height: 20px;
+  width: 20px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  background-image: url("img/add.svg");
+  cursor: pointer;
+  
+  &:hover,
+  :focus {
+    filter: opacity(78%);
+  }
+}
