@@ -96,8 +96,11 @@ class Attendance extends React.Component {
     const day = `${d.getDay()}.${d.getMonth() + 1}.${d.getFullYear()}`;
 
     return (
-      <Layout title={`Отметка посещаемости ${event.name}`}>
+      <Layout>
         <div className={cx("attendance")}>
+          <div className={cx("attendance__title")}>
+            Отметка посещаемости {event.name}
+          </div>
           <div className={cx("attendance__day")}>Дата: {day}</div>
           <div className={cx("attendance__day")}>Время: {time}</div>
           <div className={cx("attendance__groups")}>

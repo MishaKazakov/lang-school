@@ -1,21 +1,24 @@
-.panel-menu {
+.menu-category {
   padding: 0 10px;
 }
 
-.panel-menu__list {
+.menu-category__list {
   padding: 5px 10px;
 }
 
-.panel-menu__link {
+.menu-category__link {
   color: #444444;
   text-decoration: none;
-
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  
   &:hover {
     color: #666666;
   }
 }
 
-.panel-menu__link_selected {
+.menu-category__link_selected {
   text-decoration: underline;
   &:hover {
     text-decoration: underline;

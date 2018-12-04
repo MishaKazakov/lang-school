@@ -1,0 +1,7 @@
+.button_only-icon {
+  & .ant-btn {
+    border: none;
+    background-color: transparent;
+    height: 100%;
+  }
+}
