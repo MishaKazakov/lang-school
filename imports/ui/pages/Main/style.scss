@@ -1,9 +1,24 @@
 .main {
   display: flex;
   flex-direction: row;
+  width: 100vw;
+  padding-left: 20px;
 }
 
 .main__panel {
+  width: 215px;
   margin-right: 20px;
-  width: 270px;
+}
+
+.main__calendar {
+  border: none;
+  line-height: 0.9em;
+  background-color: transparent;
+  & .react-calendar__navigation {
+    margin: 0;
+  }
+}
+
+.main__menu {
+  padding-top: 10px;
 }

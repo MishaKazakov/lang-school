@@ -11,8 +11,7 @@ const browserHistory = createBrowserHistory();
 export const renderRoutes = () => (
   <Router history={browserHistory}>
   <Switch>
-    <Route exact path="/" component={Main}/>
-    <Route exact path="/(audiences|teachers|events|online)/" component={Main}/>
+    <Route exact path="/(group|audience|teacher|event|online)?" component={Main}/>
     <Route exact path="/students" component={Students}/>
     <Route exact path="/attendance" component={Attendance}/>
   </Switch>

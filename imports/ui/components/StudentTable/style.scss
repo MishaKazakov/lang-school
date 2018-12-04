@@ -1,4 +1,9 @@
+.student-table {
+  & .ant-table {
+    background-color: white;
+  }
+}
+
 .student-table__edit {
   text-align: center;
-  cursor: pointer;
 }

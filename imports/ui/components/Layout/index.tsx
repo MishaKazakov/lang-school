@@ -5,17 +5,15 @@ const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IProps {
   children: any;
-  title?: string;
 }
 
 class Layout extends React.Component<IProps> {
   render() {
-    const { children, title } = this.props;
+    const { children } = this.props;
 
     return (
       <div className={cx("layout")}>
         <Header />
-        {title && <div className={cx("layout__title")}>{title}</div>}
         {children}
       </div>
     );

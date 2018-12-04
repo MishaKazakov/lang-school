@@ -1,8 +1,9 @@
 import * as React from "react";
 import { IStudent } from "../../../models/student";
 import { Link } from "react-router-dom";
+import Button from "../Button";
+
 const Table = require("antd/lib/table");
-require("antd/lib/button/style/css");
 const { Column } = Table;
 
 import { students } from "./data";
@@ -37,11 +38,11 @@ class StudentTable extends React.Component<IProps, IState> {
   };
 
   renderEdit = (text: string, record: IStudent) => {
-    const handleEdit = () => this.props.edit(record);
+    const handleClick = () => this.props.edit(record);
 
     return (
-      <div className={cx("student-table__edit")} onClick={handleEdit}>
-        ✏️
+      <div className={cx("student-table__edit")}>
+        <Button icon={Button.ICON.EDIT} onlyIcon onClick={handleClick} />
       </div>
     );
   };
@@ -70,6 +71,7 @@ class StudentTable extends React.Component<IProps, IState> {
         onChange={this.onChange}
         pagination={pagination}
         rowKey={"_id"}
+        className={cx("student-table")}
       >
         <Column
           title="Имя"

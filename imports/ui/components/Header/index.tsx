@@ -13,20 +13,12 @@ interface IProps {
 
 class Students extends React.Component<IProps> {
   render() {
-    const isMain = this.props.location.pathname === "/";
-
     return (
       <header className={cx("header")}>
-        <Link
-          to="/"
-          className={cx("header__text", { header__text_active: isMain })}
-        >
+        <Link to="/" className={cx("header__text")}>
           Языковая школа
         </Link>
-        <Link
-          to="/students"
-          className={cx("header__text", { header__text_active: !isMain })}
-        >
+        <Link to="/students" className={cx("header__text")}>
           Студенты
         </Link>
       </header>

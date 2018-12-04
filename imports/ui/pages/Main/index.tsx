@@ -1,7 +1,7 @@
 import * as React from "react";
 import Layout from "../../components/Layout";
 import Schedule from "../../components/Schedule";
-import Panel from "../../components/Panel";
+import Menu from "../../components/Menu";
 import Calendar from "react-calendar";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
@@ -40,10 +40,11 @@ class Main extends React.Component<null, IState> {
             <Calendar
               value={date}
               onChange={this.onDateChange}
+              className={cx("main__calendar")}
               prev2Label={null}
               next2Label={null}
             />
-            <Panel />
+            <Menu className={cx("main__menu")} />
           </div>
           <Schedule date={day} />
         </div>
