@@ -1,0 +1,25 @@
+.from__item {
+  & .ant-row {
+    display: flex;
+    flex-direction: row;
+  }
+
+  & .ant-form-item-control-wrapper {
+    flex: 1;
+  }
+}
+
+.form__item_last-elem {
+  & .ant-form-item {
+    margin: 0;
+  }
+}
+
+.form__button {
+  margin-left: 10px;
+}
+
+.form__loader {
+  padding: 16px 0;
+  text-align: center;
+}

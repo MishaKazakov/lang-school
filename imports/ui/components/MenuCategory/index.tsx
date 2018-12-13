@@ -1,6 +1,8 @@
 import * as React from "react";
+import { connect } from "react-redux";
 import Button from "../Button";
 import MenuItem from "../MenuItem";
+import { openModal } from "../../reducers/modalReducer";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -13,6 +15,10 @@ const items = [
   { _id: "3", name: "Французкий" }
 ];
 
+interface IDispatchFromProps {
+  openModal: (name: string, extra?: any) => void;
+}
+
 interface IProps {
   name: string;
   url: string;
@@ -20,15 +26,14 @@ interface IProps {
   onClick: (url: string) => void;
 }
 
-class MenuCategory extends React.Component<IProps> {
-  onAddClick = (name: string) => console.log(`add new ${name}`);
-  onEditClick = _id => console.log(`item ${_id}`);
+class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
+  onAddClick = () => this.props.openModal(this.props.url);
+  onEditClick = _id => this.props.openModal(this.props.url, _id);
 
   render() {
     const { name, url, open } = this.props;
     const address = "/" + url;
     const isOpen = open === url;
-    const onAdd = () => this.onAddClick(url);
     const onClick = () => this.props.onClick(url);
 
     return (
@@ -50,7 +55,7 @@ class MenuCategory extends React.Component<IProps> {
               icon={Button.ICON.ADD}
               size={Button.SIZE.SMALL}
               onlyIcon
-              onClick={onAdd}
+              onClick={this.onAddClick}
             />
           </div>
         )}
@@ -59,4 +64,9 @@ class MenuCategory extends React.Component<IProps> {
   }
 }
 
-export default MenuCategory;
+export default connect(
+  null,
+  dispatch => ({
+    openModal: openModal(dispatch)
+  })
+)(MenuCategory);

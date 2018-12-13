@@ -1,29 +1,32 @@
 # Перед запуском проекта
 
 1. Установить [meteor](https://www.meteor.com/install).
-0. Добавить ssh ключ в [gitlab](https://gitlab.com/profile/keys).
-3. Скачайте [vs code](https://code.visualstudio.com/) и установите дополение Prettier.
+2. Добавить ssh ключ в [gitlab](https://gitlab.com/profile/keys).
+3. Скачайте [vs code](https://code.visualstudio.com/) и установите обязательно дополение `Prettier`.
 
-# Запуск 
+# Запуск
 
 1. Клонируем `git clone git@gitlab.com:lang-school/project.git`
 1. Переходим в папку `cd project`.
 1. Устанавливаем пакеты `meteor npm i`.
 1. Запускаем проект `meteor`.
-5. Создаем свою ветку в гите `git checkout -b 'имя_ветки'`.
+1. Создаем свою ветку в гите `git checkout -b 'имя-ветки'`. имя-ветки для фронта префикс `ui-имя-ветки` для бэка `api-имя-ветки`
 1. Работаем.
+   > обязательно форматируем `ctrl+shift+i`
 
 # Merge
+
 Когда работа по задаче закночилась ее необходимо подготовить к слиянию.
 
 1. Добавляем все измененные файлы `git add --all`.
 2. Создаем комит `git commit -m "сообщение комита(что было сделано)"`.
-3. Если было больше одного комита в ветке, то необходимо сквошить (создать комит, включающий все изменения).
-1. `git log --oneline` считаем (сверху вниз) сколько комитов до `orgin/master`, например **N**. И выполняем `git rebase -i HEAD~N`.
+3. Если было больше одного комита в ветке, то нужно соединить все в один.
+4. `git log --oneline` считаем (сверху вниз) сколько комитов до комита с подписью `origin/master`, например **N**. И выполняем `git rebase -i HEAD~N`.
 
-> Появиться что-то типа такого^
+> Появиться что-то типа такого
 
-```pick f7f3f6d changed my name a bit
+```
+pick f7f3f6d changed my name a bit
 pick 310154e updated README formatting and added blame
 pick a5f4a0d added cat-file
 
@@ -37,16 +40,14 @@ pick a5f4a0d added cat-file
 # If you remove a line here THAT COMMIT WILL BE LOST.
 # However, if you remove everything, the rebase will be aborted.
 ```
+
 Нужно заменить у всех комитов кроме перевого pick на s.
 
 5. Сохраняем, выходим.
-5. Получаем последние изменеия `git fetch --all -p`. Затем делаем `git rebase origin/master`.
-6. Если есть кофликты, то разруливаем. Если нет, то `git push --force orgin имя_ветки`.
-1. Говорите Мише, что пора сливать ветку, и тогда она поподает в `master`.
-1. Переключаемся на мастер `git checkout master` и скачиваем его `git pull origin master`.
-1. И вновь создаем новую ветку `git checkout -b 'имя_ветки'`.
-1. Работаем.
-
-
-
-
+6. Получаем последние изменеия `git fetch --all -p`. Затем делаем `git rebase origin/master`.
+7. Если есть кофликты, то разруливаем. Если нет, то `git push --force origin имя-ветки`.
+8. Говорите Мише, что пора сливать ветку.
+9. Если все ок, она поподает в `master`, иначе испрвляем.
+10. Переключаемся на мастер `git checkout master` и скачиваем его `git pull origin master`.
+11. И вновь создаем новую ветку `git checkout -b 'имя-ветки'`.
+12. Работаем.

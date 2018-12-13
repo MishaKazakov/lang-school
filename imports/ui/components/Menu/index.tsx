@@ -44,7 +44,7 @@ class Menu extends React.Component<IProps, IState> {
           onClick={this.changeCategory}
           open={category}
           name="Аудитории"
-          url="audience"
+          url="auditory"
         />
         <MenuCategory
           onClick={this.changeCategory}
