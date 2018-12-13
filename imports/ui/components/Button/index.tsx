@@ -20,20 +20,29 @@ enum Icon {
   ADD = "plus-circle"
 }
 
+enum HtmlType {
+  SUBMIT = "submit",
+  RESET = "reset"
+}
+
 interface IProps {
   type?: Type;
   icon?: Icon;
   size?: Size;
+  htmlType?: HtmlType;
   children?: any;
   disabled?: boolean;
   onClick?: (event?: React.SyntheticEvent<any>) => void;
   onlyIcon?: boolean;
+  className?: string;
 }
 
 class Button extends React.PureComponent<IProps> {
   static TYPE = Type;
   static ICON = Icon;
   static SIZE = Size;
+  static HTMLTYPE = HtmlType;
+
   render() {
     const {
       onClick,
@@ -42,9 +51,11 @@ class Button extends React.PureComponent<IProps> {
       disabled,
       icon,
       onlyIcon,
-      size
+      size,
+      htmlType,
+      className
     } = this.props;
-    const shape = icon ? "circle" : "";
+    const shape = icon ? "circle" : null;
 
     return (
       <span className={cx({ "button_only-icon": onlyIcon })}>
@@ -55,6 +66,8 @@ class Button extends React.PureComponent<IProps> {
           onClick={onClick}
           disabled={disabled}
           icon={icon}
+          htmlType={htmlType}
+          className={className}
         >
           {children}
         </AntButton>

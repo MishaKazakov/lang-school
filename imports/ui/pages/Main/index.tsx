@@ -3,6 +3,7 @@ import Layout from "../../components/Layout";
 import Schedule from "../../components/Schedule";
 import Menu from "../../components/Menu";
 import Calendar from "react-calendar";
+import MenuModals from "../../components/MenuModals";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -35,6 +36,7 @@ class Main extends React.Component<null, IState> {
 
     return (
       <Layout>
+        <MenuModals />
         <div className={cx("main")}>
           <div className={cx("main__panel")}>
             <Calendar
