@@ -1,0 +1,20 @@
+@import "../ModalFrom/style.scss";
+
+.form__remove {
+  position: absolute;
+  font-size: 22px;
+  right: 5px;
+  bottom: 5px;
+  cursor: pointer;
+}
+
+.form__group {
+  position: relative;
+  border: 1px solid gray;
+  padding: 5px 10px;
+  margin-bottom: 10px;
+}
+
+.form__button-add {
+  margin-bottom: 5px;
+}

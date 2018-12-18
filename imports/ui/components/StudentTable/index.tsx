@@ -32,9 +32,12 @@ class StudentTable extends React.Component<IProps, IState> {
   );
 
   renderGroup = (text: string, record: IStudent) => {
-    const groups = record.group.map(group => group.name).join(", ");
+    const groups = [];
+    for (let group in record.group) {
+      groups.push(record.group[group].name);
+    }
 
-    return <Link to={`/student-table/${record._id}`}>{groups}</Link>;
+    return <Link to={`/student-table/${record._id}`}>{groups.join(", ")}</Link>;
   };
 
   renderEdit = (text: string, record: IStudent) => {
