@@ -1,7 +1,7 @@
 interface IAction {
   type: string;
   modalName: string;
-  extra: any;
+  extra?: any;
 }
 
 export const modalReducer = (state = {}, action: IAction) => {

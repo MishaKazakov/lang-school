@@ -3,9 +3,15 @@ export interface IStudent {
   lastName: string;
   firstName: string;
   secondName?: string;
-  miss: number[];
+  phone?: string;
   group: {
-    _id: string;
-    name: string;
-  }[];
+    [groupId: string]: {
+      _id: string;
+      name: string;
+      numberLessons: number;
+      attended: string[];
+      miss: string[];
+      canceled: string[];
+    };
+  };
 }

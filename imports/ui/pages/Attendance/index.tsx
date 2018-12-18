@@ -2,48 +2,81 @@ import * as React from "react";
 import Layout from "../../components/Layout";
 import StudentGroup from "../../components/StudentGroup";
 import { IStudent } from "../../../models/student";
+import { IEvent } from "../../../models/event";
 import { formatTime } from "../../../helpers/string";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
-const event = {
+const event: IEvent = {
   _id: "1",
   name: "Английский",
-  attended: ["1"],
-  missed: [],
+  group: "abc",
   date: new Date(),
   timeStart: [10, 30],
-  timeEnd: [12, 0]
+  timeEnd: [12, 0],
+  audience: { name: "Нью-йорк" }
 };
 
-const students = [
+let students: IStudent[] = [
   {
     _id: "1",
     firstName: "Дима",
     lastName: "Васнецов",
-    miss: [],
-    group: [{ _id: "1", name: "Английский" }]
+    group: {
+      abc: {
+        _id: "abc",
+        name: "Английский",
+        miss: [],
+        attended: [],
+        canceled: [],
+        numberLessons: 5
+      }
+    }
   },
   {
     _id: "2",
     firstName: "Вася",
     lastName: "Савельев",
-    miss: [],
-    group: [{ _id: "1", name: "Английский" }]
+    group: {
+      abc: {
+        _id: "abc",
+        name: "Английский",
+        miss: [],
+        attended: [],
+        canceled: [],
+        numberLessons: 5
+      }
+    }
   },
   {
     _id: "3",
     firstName: "Евгений",
     lastName: "Онегин ",
-    miss: [],
-    group: [{ _id: "1", name: "Английский" }]
+    group: {
+      abc: {
+        _id: "abc",
+        name: "Английский",
+        miss: [],
+        attended: [],
+        canceled: [],
+        numberLessons: 5
+      }
+    }
   },
   {
     _id: "4",
     firstName: "Захар",
     lastName: "Медведев",
-    miss: [1],
-    group: [{ _id: "1", name: "Английский" }]
+    group: {
+      abc: {
+        _id: "abc",
+        name: "Английский",
+        miss: [],
+        attended: [],
+        canceled: ["1"],
+        numberLessons: 5
+      }
+    }
   }
 ];
 
@@ -51,19 +84,21 @@ class Attendance extends React.Component {
   mapGroup = (students: IStudent[], event) => {
     const group = [];
     const attended = [];
-    const missed = [];
+    const canceled = [];
+    const groupId: string = event.group;
+    const eventId = event._id;
 
     students.forEach(student => {
-      if (event.attended.includes(student._id)) {
+      if (student.group[groupId].attended.includes(eventId)) {
         attended.push(student);
-      } else if (event.missed.includes(student._id)) {
-        missed.push(student);
+      } else if (student.group[groupId].canceled.includes(eventId)) {
+        canceled.push(student);
       } else {
         group.push(student);
       }
     });
 
-    return { group, attended, missed };
+    return { group, attended, canceled };
   };
 
   onClick = e => {
@@ -73,24 +108,42 @@ class Attendance extends React.Component {
   };
 
   changeStudentStatus = (id: string) => {
-    if (event.attended.includes(id)) {
-      const position = event.attended.indexOf(id);
-      event.attended.splice(position, 1);
-      event.missed.push(id);
+    let student = students.find(student => student._id === id);
+    const groupId = event.group;
+    const group = student.group[groupId];
+    const eventId = event._id;
+
+    if (group.attended.includes(eventId)) {
+      group.attended = group.attended.filter(id => id != eventId);
+      group.canceled.push(eventId);
+      student.group[groupId] = group;
+      students = students.map(stud => {
+        if (stud._id === student._id) return student;
+        else return stud;
+      });
       return;
     }
 
-    if (event.missed.includes(id)) {
-      const position = event.missed.indexOf(id);
-      event.missed.splice(position, 1);
+    if (group.canceled.includes(eventId)) {
+      group.canceled = group.canceled.filter(id => id != eventId);
+      student.group[groupId] = group;
+      students = students.map(stud => {
+        if (stud._id === student._id) return student;
+        else return stud;
+      });
       return;
     }
 
-    event.attended.push(id);
+    group.attended.push(eventId);
+    student.group[groupId] = group;
+    students = students.map(stud => {
+      if (stud._id === student._id) return student;
+      else return stud;
+    });
   };
 
   render() {
-    const { group, attended, missed } = this.mapGroup(students, event);
+    const { group, attended, canceled } = this.mapGroup(students, event);
     const time = formatTime(event.timeStart);
     const d = event.date;
     const day = `${d.getDay()}.${d.getMonth() + 1}.${d.getFullYear()}`;
@@ -117,7 +170,7 @@ class Attendance extends React.Component {
             <StudentGroup
               onClick={this.onClick}
               title="Отменили"
-              students={missed}
+              students={canceled}
             />
           </div>
         </div>
