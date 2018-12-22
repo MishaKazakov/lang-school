@@ -30,6 +30,7 @@ interface IProps {
   icon?: Icon;
   size?: Size;
   htmlType?: HtmlType;
+  ghost?: boolean;
   children?: any;
   disabled?: boolean;
   onClick?: (event?: React.SyntheticEvent<any>) => void;
@@ -53,26 +54,34 @@ class Button extends React.PureComponent<IProps> {
       onlyIcon,
       size,
       htmlType,
-      className
+      className,
+      ghost
     } = this.props;
     const shape = icon ? "circle" : null;
 
-    return (
-      <span className={cx({ "button_only-icon": onlyIcon })}>
-        <AntButton
-          type={type}
-          shape={shape}
-          size={size}
-          onClick={onClick}
-          disabled={disabled}
-          icon={icon}
-          htmlType={htmlType}
-          className={className}
-        >
-          {children}
-        </AntButton>
-      </span>
+    const button = (
+      <AntButton
+        type={type}
+        shape={shape}
+        size={size}
+        onClick={onClick}
+        disabled={disabled}
+        icon={icon}
+        htmlType={htmlType}
+        ghost={ghost}
+        className={className}
+      >
+        {children}
+      </AntButton>
     );
+
+    if (onlyIcon) {
+      return (
+        <span className={cx({ "button_only-icon": onlyIcon })}>{button}</span>
+      );
+    }
+
+    return button;
   }
 }
 

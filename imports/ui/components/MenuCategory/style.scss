@@ -1,3 +1,5 @@
+@import "../../styles/styles.scss";
+
 .menu-category {
   padding: 0 10px;
 }
@@ -7,14 +9,14 @@
 }
 
 .menu-category__link {
-  color: #444444;
+  color: $text-color;
   text-decoration: none;
   border: none;
   background-color: transparent;
   cursor: pointer;
-  
+
   &:hover {
-    color: #666666;
+    color: $text-color-select;
   }
 }
 
