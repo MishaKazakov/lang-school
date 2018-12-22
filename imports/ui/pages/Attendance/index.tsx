@@ -14,7 +14,7 @@ const event: IEvent = {
   date: new Date(),
   timeStart: [10, 30],
   timeEnd: [12, 0],
-  audience: { name: "Нью-йорк" }
+  auditory: { name: "Нью-йорк" }
 };
 
 let students: IStudent[] = [

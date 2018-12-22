@@ -1,5 +1,6 @@
 import * as React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import Button from "../Button";
 import MenuItem from "../MenuItem";
 import { openModal } from "../../reducers/modalReducer";
@@ -38,18 +39,19 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
 
     return (
       <div className={cx("menu-category")}>
-        <button
+        <Link
+          to={address}
           onClick={onClick}
           className={cx("menu-category__link", {
             "menu-category__link_selected": isOpen
           })}
         >
           {name}
-        </button>
+        </Link>
         {isOpen && (
           <div className={cx("menu-category__list")}>
             {items.map(item => (
-              <MenuItem item={item} url={address} onClick={this.onEditClick} />
+              <MenuItem key={item._id} item={item} url={address} onClick={this.onEditClick} />
             ))}
             <Button
               icon={Button.ICON.ADD}

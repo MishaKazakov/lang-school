@@ -12,7 +12,7 @@ interface IProps {
 
 // чтобы занятие появилось нужно открыть другую консоль
 // войти в режим редактирования meteor mongo
-// и вставить db.events.insert({name:"Английский", date: new Date(), timeStart: [12,0], timeEnd:[14,0], audience:{name: "Нью-Йорк"}})
+// и вставить db.events.insert({name:"Английский", date: new Date(), timeStart: [12,0], timeEnd:[14,0], auditory:{name: "Нью-Йорк"}})
 
 class Grid extends React.Component<IProps> {
   prepareEvents = (events: IEvent[]) => {
