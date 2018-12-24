@@ -1,0 +1,13 @@
+@import "../ModalFrom/style.scss";
+
+.time-picker {
+  width: 172px;
+}
+
+.time-picker__popup {
+  width: 174px;
+
+  & .ant-time-picker-panel-input-wrap {
+    max-width: inherit;
+  }
+}

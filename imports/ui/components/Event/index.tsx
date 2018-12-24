@@ -4,6 +4,9 @@ import { IEvent } from "../../../models/event";
 import { formatTime } from "../../../helpers/string";
 import Button from "../Button";
 
+import { connect } from "react-redux";
+import { openModal } from "../../reducers/modalReducer";
+
 const Icon = require("antd/lib/icon");
 const Popover = require("antd/lib/popover");
 
@@ -13,13 +16,21 @@ interface IProps {
   event: IEvent;
 }
 
-class Event extends React.Component<IProps> {
+interface IDispatchFromProps {
+  openModal: (name: string, extra?: any) => void;
+}
+
+class Event extends React.Component<IProps & IDispatchFromProps> {
   getPosition = (time: number[]) => (time[0] - 8) * 60 + time[1];
 
   getDuration = (startTime: number[], endTime: number[]) =>
     (endTime[0] - startTime[0]) * 60 + endTime[1] - startTime[1];
 
-  onEditClick = () => "";
+  onEditClick = () => {
+    const { openModal, event } = this.props;
+    openModal("group-element", event._id);
+  };
+
   onDeleteClick = () => "";
 
   popoverContent = (
@@ -63,7 +74,7 @@ class Event extends React.Component<IProps> {
             с {startTime} до {endTime}
           </div>
           {duration > 45 && (
-            <div className={cx("event__audience")}>{event.audience.name}</div>
+            <div className={cx("event__auditory")}>{event.auditory.name}</div>
           )}
         </Link>
         <Popover content={this.popoverContent} placement="right">
@@ -76,4 +87,9 @@ class Event extends React.Component<IProps> {
   }
 }
 
-export default Event;
+export default connect(
+  null,
+  dispatch => ({
+    openModal: openModal(dispatch)
+  })
+)(Event);

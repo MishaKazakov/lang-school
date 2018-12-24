@@ -2,8 +2,9 @@ export interface IEvent {
   _id: string;
   name: string;
   date: Date;
+  day?: number;
   group: string;
   timeStart: number[];
   timeEnd: number[];
-  audience: { name: string };
+  auditory: { name?: string, _id?: string };
 }
