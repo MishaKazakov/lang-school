@@ -13,12 +13,13 @@ interface IProps {
   visible: boolean;
   isLoading: boolean;
   onClose: () => void;
+  onSubmit?: (data) => void;
 }
 
 class ModalForm extends React.Component<IProps> {
   onClose = () => {
     this.props.form.resetFields();
-    this.props.onClose();
+    this.props.onClose && this.props.onClose();
   };
 
   onSubmit = e => {
@@ -26,6 +27,7 @@ class ModalForm extends React.Component<IProps> {
     const { validateFields } = this.props.form;
     validateFields({ force: true }, (err, values) => {
       if (!err) {
+        this.props.onSubmit && this.props.onSubmit(values);
         this.onClose();
       }
     });

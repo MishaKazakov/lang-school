@@ -5,9 +5,14 @@ import Button from "../Button";
 import MenuItem from "../MenuItem";
 import { openModal } from "../../reducers/modalReducer";
 
+import { Auditories } from "../../../api/auditories";
+
+import { compose } from "redux";
+import { withTracker } from "meteor/react-meteor-data";
+
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
-const items = [
+const propsItems = [
   {
     _id: "1",
     name: "Английский"
@@ -20,11 +25,16 @@ interface IDispatchFromProps {
   openModal: (name: string, extra?: any) => void;
 }
 
+interface IDataProps {
+  items: any;
+}
+
 interface IProps {
   name: string;
   url: string;
   open: string;
   onClick: (url: string) => void;
+  items: any;
 }
 
 class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
@@ -32,7 +42,7 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
   onEditClick = _id => this.props.openModal(this.props.url, _id);
 
   render() {
-    const { name, url, open } = this.props;
+    const { name, url, open, items } = this.props;
     const address = "/" + url;
     const isOpen = open === url;
     const onClick = () => this.props.onClick(url);
@@ -51,7 +61,12 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
         {isOpen && (
           <div className={cx("menu-category__list")}>
             {items.map(item => (
-              <MenuItem key={item._id} item={item} url={address} onClick={this.onEditClick} />
+              <MenuItem
+                key={item._id}
+                item={item}
+                url={address}
+                onClick={this.onEditClick}
+              />
             ))}
             <Button
               icon={Button.ICON.ADD}
@@ -66,9 +81,23 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
   }
 }
 
-export default connect(
-  null,
-  dispatch => ({
-    openModal: openModal(dispatch)
+export default compose(
+  connect(
+    null,
+    dispatch => ({
+      openModal: openModal(dispatch)
+    })
+  ),
+  withTracker<IDataProps, IProps>(({ url }) => {
+    switch (url) {
+      case "auditory":
+        return {
+          items: Auditories.find().fetch()
+        };
+      default:
+        return {
+          items: propsItems
+        };
+    }
   })
 )(MenuCategory);
