@@ -7,6 +7,11 @@ import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
 
+import { Auditories } from "../../../api/auditories";
+
+import { compose } from "redux";
+import { withTracker } from "meteor/react-meteor-data";
+
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Input = require("antd/lib/input");
@@ -22,28 +27,44 @@ interface IDispatchFromProps {
   closeModal: typeof closeModal;
 }
 
-interface IState {
+interface IDataProps {
+  auditory: any;
+}
+
+interface IProps {
   auditory: IAuditory;
 }
 
 const name = "auditory";
 
 class ModalAuditory extends React.Component<
-  IStateToProps & IDispatchFromProps & FormProps,
-  IState
+  IStateToProps & IDispatchFromProps & FormProps & IProps
 > {
-  constructor(props) {
-    super(props);
-    this.state = {
-      auditory: null
-    };
-  }
-
   onClose = () => {
     this.setState({
       auditory: null
     });
     this.props.closeModal(name);
+  };
+
+  onSubmit = (data: IAuditory) => {
+    const { auditory } = this.props;
+    const id = auditory && auditory._id;
+
+    if (id) {
+      Auditories.update(
+        { _id: id },
+        {
+          name: data.name,
+          capacity: data.capacity
+        }
+      );
+    } else {
+      Auditories.insert({
+        name: data.name,
+        capacity: data.capacity
+      });
+    }
   };
 
   getData = (_id: string) => {
@@ -59,12 +80,10 @@ class ModalAuditory extends React.Component<
   };
 
   render() {
-    const { form, modal } = this.props;
-    const { auditory } = this.state;
+    const { form, modal, auditory } = this.props;
     const { getFieldDecorator } = form;
     const modalKind = modal.extra;
     const title = modalKind ? "Редактирование" : "Создание";
-    !auditory && modalKind && this.getData(modalKind);
     const isLoading = modalKind && !auditory;
 
     return (
@@ -73,11 +92,12 @@ class ModalAuditory extends React.Component<
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
+        onSubmit={this.onSubmit}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
           <FormItem label="Название" hasFeedback>
-            {getFieldDecorator("lastName", {
+            {getFieldDecorator("name", {
               initialValue: auditory ? auditory.name : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Введите название" }]
@@ -86,7 +106,7 @@ class ModalAuditory extends React.Component<
         </div>
         <div className={cx("from__item form__item_last-elem")}>
           <FormItem label="Вместимость" hasFeedback>
-            {getFieldDecorator("phone", {
+            {getFieldDecorator("capacity", {
               initialValue: auditory ? auditory.capacity : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Введите  число" }]
@@ -100,11 +120,26 @@ class ModalAuditory extends React.Component<
 
 const modal = Form.create()(ModalAuditory);
 
-export default connect<IStateToProps, IDispatchFromProps>(
-  (state: IStore) => ({
-    modal: state.modal
-  }),
-  dispatch => ({
-    closeModal: closeModal(dispatch)
+export default compose(
+  connect<IStateToProps, IDispatchFromProps>(
+    (state: IStore) => ({
+      modal: state.modal
+    }),
+    dispatch => ({
+      closeModal: closeModal(dispatch)
+    })
+  ),
+  withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
+    const _id = modal.extra;
+
+    if (_id) {
+      return {
+        auditory: Auditories.findOne({ _id })
+      };
+    }
+
+    return {
+      auditory: null
+    };
   })
 )(modal);
