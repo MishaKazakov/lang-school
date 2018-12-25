@@ -9,10 +9,9 @@ interface IProps {
   onChangeCategory: (category: string) => void;
 }
 
-
 class Menu extends React.Component<IProps> {
   render() {
-    const { className,category, onChangeCategory } = this.props;
+    const { className, category, onChangeCategory } = this.props;
 
     return (
       <div className={cx("panel", className)}>

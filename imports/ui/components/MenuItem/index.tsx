@@ -6,11 +6,12 @@ const cx = require("classnames/bind").bind(require("./style.scss"));
 
 export default function add({ item, onClick, url }) {
   const onEditClick = () => onClick(item._id);
+  const label = item.name ? item.name : `${item.lastName} ${item.firstName}`;
 
   return (
     <div>
       <Link id={item._id} className={cx("link")} to={`${url}?id=${item._id}`}>
-        {item.name}
+        {label}
       </Link>
       <Button
         icon={Button.ICON.EDIT}
