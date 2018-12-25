@@ -27,6 +27,7 @@ interface IDispatchFromProps {
 
 interface IState {
   date: Date;
+  calendarDate: Date;
   category: string;
 }
 
@@ -36,7 +37,8 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
 
     const path = props.location.pathname.substr(1);
     this.state = {
-      date: new Date(),
+      date: this.getMonday(new Date()),
+      calendarDate: new Date(),
       category: path || "group"
     };
   }
@@ -56,13 +58,17 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
     return day;
   };
 
-  onDateChange = (d: Date) => this.setState({ date: d });
+  onDateChange = (newDate: Date) => {
+    this.setState({
+      date: this.getMonday(newDate),
+      calendarDate: newDate
+    });
+  };
 
   withAddButton = ["group", "event"];
 
   render() {
-    const { date, category } = this.state;
-    const day = this.getMonday(date);
+    const { date, category, calendarDate } = this.state;
     const hideAdd = !this.withAddButton.includes(category);
 
     return (
@@ -72,7 +78,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
         <div className={cx("main")}>
           <div className={cx("main__panel")}>
             <Calendar
-              value={date}
+              value={calendarDate}
               onChange={this.onDateChange}
               className={cx("main__calendar")}
               prev2Label={null}
@@ -84,7 +90,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
               className={cx("main__menu")}
             />
           </div>
-          <Schedule date={day} />
+          <Schedule date={date} />
         </div>
       </Layout>
     );

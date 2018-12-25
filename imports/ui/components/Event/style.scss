@@ -1,7 +1,9 @@
 @import "../../styles/styles.scss";
 
 .event__wrapper {
-  position: relative;
+  position: absolute;
+  width: 100%;
+  padding: 0 5px 5px;
 }
 
 .event {
@@ -14,6 +16,8 @@
   color: $text-color;
   background-color: aquamarine;
   border-radius: 7px;
+  border-top-left-radius: 0;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   cursor: pointer;
 
   &:visited,

@@ -18,7 +18,7 @@ class Schedule extends React.Component<IProps> {
         <Weekdays className={cx("schedule__weekdays")} startDay={date} />
         <div className={cx("schedule__table")}>
           <TimeRuler />
-          <Grid />
+          <Grid date={date} />
         </div>
       </div>
     );

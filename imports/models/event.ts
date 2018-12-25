@@ -3,7 +3,7 @@ export interface IEvent {
   name: string;
   date: Date;
   day?: number;
-  group: string;
+  group?: string;
   timeStart: number[];
   timeEnd: number[];
   auditory: { name?: string, _id?: string };

@@ -9,7 +9,7 @@
   border-bottom: 1px gray solid;
 }
 
-.columns {
+.gird__columns-wrapper {
   display: flex;
   position: absolute;
   top: 0;
@@ -17,13 +17,9 @@
   left: 0;
 }
 
-.columns__item {
+.gird__column {
+  position: relative;
   flex: 1;
   height: 901px;
   border-right: 1px gray solid;
-}
-
-.columns__line-wrapper {
-  padding-right: 5px;
-  height: 100%;
 }
