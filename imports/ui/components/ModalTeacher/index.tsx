@@ -8,6 +8,11 @@ import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
 
+import { Teachers } from "../../../api/teachers";
+
+import { compose } from "redux";
+import { withTracker } from "meteor/react-meteor-data";
+
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Input = require("antd/lib/input");
@@ -22,23 +27,19 @@ interface IDispatchFromProps {
   closeModal: typeof closeModal;
 }
 
-interface IState {
+interface IDataProps {
+  teacher: any;
+}
+
+interface IProps {
   teacher: ITeacher;
 }
 
 const name = "teacher";
 
 class ModalTeacher extends React.Component<
-  IStateToProps & IDispatchFromProps & FormProps,
-  IState
+  IStateToProps & IDispatchFromProps & FormProps & IProps
 > {
-  constructor(props) {
-    super(props);
-    this.state = {
-      teacher: null
-    };
-  }
-
   onClose = () => {
     this.setState({
       teacher: null
@@ -46,26 +47,35 @@ class ModalTeacher extends React.Component<
     this.props.closeModal(name);
   };
 
-  getData = (_id: string) => {
-    setTimeout(() => {
-      this.setState({
-        teacher: {
-          _id: "1",
-          firstName: "Александр",
-          lastName: "Николаевич",
-          phone: "+79458802023"
+  onSubmit = (data: ITeacher) => {
+    const { teacher } = this.props;
+    const id = teacher && teacher._id;
+
+    if (id) {
+      Teachers.update(
+        { _id: id },
+        {
+          firstName: data.firstName,
+          secondName: data.secondName,
+          lastName: data.lastName,
+          phone: data.phone
         }
+      );
+    } else {
+      Teachers.insert({
+        firstName: data.firstName,
+        secondName: data.secondName,
+        lastName: data.lastName,
+        phone: data.phone
       });
-    }, 1000);
+    }
   };
 
   render() {
-    const { form, modal } = this.props;
-    const { teacher } = this.state;
+    const { form, modal, teacher } = this.props;
     const { getFieldDecorator } = form;
     const modalKind = modal.extra;
     const title = modalKind ? "Редактирование" : "Создание";
-    !teacher && modalKind && this.getData(modalKind);
     const isLoading = modalKind && !teacher;
 
     return (
@@ -74,6 +84,7 @@ class ModalTeacher extends React.Component<
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
+        onSubmit={this.onSubmit}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
@@ -142,11 +153,26 @@ class ModalTeacher extends React.Component<
 
 const modal = Form.create()(ModalTeacher);
 
-export default connect<IStateToProps, IDispatchFromProps>(
-  (state: IStore) => ({
-    modal: state.modal
-  }),
-  dispatch => ({
-    closeModal: closeModal(dispatch)
+export default compose(
+  connect<IStateToProps, IDispatchFromProps>(
+    (state: IStore) => ({
+      modal: state.modal
+    }),
+    dispatch => ({
+      closeModal: closeModal(dispatch)
+    })
+  ),
+  withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
+    const _id = modal.extra;
+
+    if (_id) {
+      return {
+        teacher: Teachers.findOne({ _id })
+      };
+    }
+
+    return {
+      teacher: null
+    };
   })
 )(modal);

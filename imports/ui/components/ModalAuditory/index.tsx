@@ -67,18 +67,6 @@ class ModalAuditory extends React.Component<
     }
   };
 
-  getData = (_id: string) => {
-    setTimeout(() => {
-      this.setState({
-        auditory: {
-          _id: "1",
-          name: "Николаевич",
-          capacity: 10
-        }
-      });
-    }, 1000);
-  };
-
   render() {
     const { form, modal, auditory } = this.props;
     const { getFieldDecorator } = form;

@@ -6,6 +6,7 @@ import MenuItem from "../MenuItem";
 import { openModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
+import { Teachers } from "../../../api/teachers";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -26,7 +27,7 @@ interface IDispatchFromProps {
 }
 
 interface IDataProps {
-  items: any;
+  items?: any;
 }
 
 interface IProps {
@@ -34,7 +35,7 @@ interface IProps {
   url: string;
   open: string;
   onClick: (url: string) => void;
-  items: any;
+  items?: any;
 }
 
 class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
@@ -82,7 +83,7 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
 }
 
 export default compose(
-  connect(
+  connect<null, IDispatchFromProps, IProps>(
     null,
     dispatch => ({
       openModal: openModal(dispatch)
@@ -93,6 +94,10 @@ export default compose(
       case "auditory":
         return {
           items: Auditories.find().fetch()
+        };
+      case "teacher":
+        return {
+          items: Teachers.find().fetch()
         };
       default:
         return {
