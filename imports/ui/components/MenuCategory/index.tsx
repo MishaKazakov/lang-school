@@ -7,6 +7,7 @@ import { openModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
 import { Teachers } from "../../../api/teachers";
+import { Groups } from "../../../api/groups";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -99,6 +100,10 @@ export default compose(
         return {
           items: Teachers.find().fetch()
         };
+      case "group":
+        return{
+          items: Groups.find().fetch()
+        }
       default:
         return {
           items: propsItems

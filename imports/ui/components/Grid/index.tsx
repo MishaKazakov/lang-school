@@ -1,18 +1,22 @@
 import * as React from "react";
 import Event from "../Event";
 import { IEvent } from "../../../models/event";
+import { IAuditory } from "../../../models/auditory";
 import { withTracker } from "meteor/react-meteor-data";
 import { Events } from "../../../api/events";
+import { Auditories } from "../../../api/auditories";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IDataProps {
   events: any;
+  auditories: any;
 }
 
 interface IProps {
   date: Date;
   events?: IEvent[];
+  auditories?: IAuditory;
 }
 
 // чтобы занятие появилось нужно открыть другую консоль
@@ -37,6 +41,7 @@ class Grid extends React.Component<IProps & IDataProps> {
   };
 
   render() {
+    const { auditories } = this.props;
     const times = Array.from({ length: 15 }, (v, i) => i + 1);
     const schedule = this.prepareEvents(this.props.events);
 
@@ -49,7 +54,9 @@ class Grid extends React.Component<IProps & IDataProps> {
           {schedule.map((day, i) => (
             <div key={i} className={cx("gird__column")}>
               {day.length !== 0 &&
-                day.map(e => <Event key={e._id} event={e} />)}
+                day.map(e => (
+                  <Event auditories={auditories} key={e._id} event={e} />
+                ))}
             </div>
           ))}
         </div>
@@ -68,6 +75,7 @@ export default withTracker<IDataProps, IProps>(({ date: monday }) => {
         $gte: monday,
         $lt: sunday
       }
-    }).fetch()
+    }).fetch(),
+    auditories: Auditories.find().fetch()
   };
 })(Grid);

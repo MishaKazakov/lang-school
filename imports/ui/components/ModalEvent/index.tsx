@@ -70,7 +70,7 @@ class ModalEvent extends React.Component<
           name: "Николаевич",
           timeStart: [10, 0],
           timeEnd: [12, 0],
-          auditory: { _id: "aud1" }
+          auditoryId: "aud1"
         },
         auditoryData: {
           _id: "data1",
@@ -167,7 +167,7 @@ class ModalEvent extends React.Component<
         <div className={cx("from__item")}>
           <FormItem label="Аудитория" hasFeedback>
             {getFieldDecorator("auditory", {
-              initialValue: event ? event.auditory._id : "",
+              initialValue: event ? event.auditoryId : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Выберите аудитрию" }]
             })(<Select>{auditoryItems}</Select>)}

@@ -1,5 +1,7 @@
 export interface IGroup {
   _id: string;
+  teacherId: string;
   name: string;
-  teacher: string;
+  startDate: Date | any;
+  numberOfClasses: number;
 }
