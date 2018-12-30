@@ -1,20 +1,22 @@
 import * as React from "react";
+import { connect } from "react-redux";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
+import { IActivity } from "../../../models/activity";
 import { IAuditory } from "../../../models/auditory";
+import { ITeacher } from "../../../models/teacher";
 import { IAuditoryData } from "../../../models/auditoryData";
-import { IEvent } from "../../../models/event";
+import { closeModal } from "../../reducers/modalReducer";
+import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 
-import { connect } from "react-redux";
-import { closeModal } from "../../reducers/modalReducer";
-
-import { FormComponentProps as FormProps } from "antd/lib/form";
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
+const Input = require("antd/lib/input");
 const Select = require("antd/lib/select");
 const Option = Select.Option;
+const DatePicker = require("antd/lib/date-picker");
 const TimePicker = require("antd/lib/time-picker").default;
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
@@ -28,33 +30,39 @@ interface IDispatchFromProps {
 }
 
 interface IState {
-  event: IEvent;
+  activity: IActivity;
   auditoryData: IAuditoryData;
   auditories: IAuditory[];
+  employees: ITeacher[];
 }
 
-const name = "group-element";
+const name = "activity";
 
-class ModalEvent extends React.Component<
+class ModalActivity extends React.Component<
   IStateToProps & IDispatchFromProps & FormProps,
   IState
 > {
   constructor(props) {
     super(props);
     this.state = {
-      event: null,
+      activity: null,
       auditoryData: null,
       auditories: [
         { _id: "aud1", name: "Нью-Йорк", capacity: 10 },
         { _id: "aud2", name: "Лондон", capacity: 10 },
         { _id: "aud3", name: "Париж", capacity: 10 }
+      ],
+      employees: [
+        { _id: "emp1", firstName: "qwe", lastName: "rty" },
+        { _id: "emp2", firstName: "qwe", lastName: "rty" },
+        { _id: "emp3", firstName: "qwe", lastName: "rty" }
       ]
     };
   }
 
   onClose = () => {
     this.setState({
-      event: null
+      activity: null
     });
     this.props.closeModal(name);
   };
@@ -62,15 +70,15 @@ class ModalEvent extends React.Component<
   getData = (_id: string) => {
     setTimeout(() => {
       this.setState({
-        event: {
+        activity: {
           _id: "1",
-          date: new Date(),
-          day: 0,
-          group: "1",
-          name: "Николаевич",
-          timeStart: [10, 0],
-          timeEnd: [12, 0],
-          auditory: { _id: "aud1" }
+          name: "123",
+          date: new Date(Date.now()),
+          group: "123",
+          timeStart: [12, 0],
+          timeEnd: [13, 0],
+          employees: [{ _id: "emp1", firstName: "qwe", lastName: "rty" }],
+          auditory: { _id: "aud1", name: "Нью-Йорк"}
         },
         auditoryData: {
           _id: "data1",
@@ -85,23 +93,6 @@ class ModalEvent extends React.Component<
       });
     }, 1000);
   };
-
-  dayNames = [
-    "Понедельник",
-    "Вторник",
-    "Среда",
-    "Четверг",
-    "Пятница",
-    "Суббота",
-    "Воскресенье"
-  ];
-
-  getDayItems = () =>
-    this.dayNames.map((day, i) => (
-      <Option key={day} value={i}>
-        {day}
-      </Option>
-    ));
 
   getAuditoryItems = () =>
     this.state.auditories.map(auditory => (
@@ -129,23 +120,31 @@ class ModalEvent extends React.Component<
     return minutes;
   };
 
+  getEmployeeItems = () =>
+    this.state.employees.map(employee => (
+      <Option key={employee._id} value={employee._id}>
+        {employee.firstName} {employee.lastName}
+      </Option>
+    ));
+
   render() {
     const { form, modal } = this.props;
-    const { event } = this.state;
+    const { activity } = this.state;
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
     const title = modalKind ? "Редактирование" : "Создание";
-    const isLoading = modalKind && !event;
-    isLoading && this.getData(modalKind);
+    !activity && modalKind && this.getData(modalKind);
+    const isLoading = modalKind && !activity;
 
+    const timeFormat = "HH:mm";
+    const datePlaceholder = "Введите дату";
+    const timePlaceholder = "Введите время";
     const auditoryItems = this.getAuditoryItems();
-    const dayItems = this.getDayItems();
-
-    const beginTime = event && this.getMomentTime(event.timeStart);
-    const endTime = event && this.getMomentTime(event.timeEnd);
-
+    const employeeItems = this.getEmployeeItems();
     const disabledHours = () => [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
+    const beginTime = activity && this.getMomentTime(activity.timeStart);
+    const endTime = activity && this.getMomentTime(activity.timeEnd);
 
     return (
       <ModalForm
@@ -155,30 +154,30 @@ class ModalEvent extends React.Component<
         onClose={this.onClose}
         isLoading={isLoading}
       >
-        <div className={cx("from__item")}>
-          <FormItem label="День недели" hasFeedback>
-            {getFieldDecorator("day", {
-              initialValue: event ? event.day : "",
+        <div className={cx("form__item")}>
+          <FormItem label="Название" hasFeedback>
+            {getFieldDecorator("name", {
+              initialValue: activity ? activity.name : "",
               validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберите день недели" }]
-            })(<Select>{dayItems}</Select>)}
+              rules: [{ required: true, message: "Введите название" }]
+            })(<Input />)}
           </FormItem>
         </div>
-        <div className={cx("from__item")}>
-          <FormItem label="Аудитория" hasFeedback>
-            {getFieldDecorator("auditory", {
-              initialValue: event ? event.auditory._id : "",
-              validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберите аудитрию" }]
-            })(<Select>{auditoryItems}</Select>)}
+        <div className={cx("form__item")}>
+          <FormItem label="Дата" hasFeedback>
+            {getFieldDecorator("date", {
+              initialValue: activity ? moment(activity.date) : null,
+              validateTrigger: ["onChange"],
+              rules: [{ required: true, message: {datePlaceholder} }]
+            })(<DatePicker placeholder={datePlaceholder} />)}
           </FormItem>
         </div>
         <div className={cx("from__item")}>
           <FormItem label="Время начала" hasFeedback>
-            {getFieldDecorator("begin-time", {
+            {getFieldDecorator("beginTime", {
               initialValue: beginTime,
               validateTrigger: ["onChange"],
-              rules: [{ required: true, message: "Введите  число" }]
+              rules: [{ required: true, message: {timePlaceholder} }]
             })(
               <TimePicker
                 disabledHours={disabledHours}
@@ -186,17 +185,18 @@ class ModalEvent extends React.Component<
                 hideDisabledOptions
                 popupClassName={cx("time-picker__popup")}
                 className={cx("time-picker")}
-                format="HH:mm"
+                format={timeFormat}
+                placeholder={timePlaceholder}
               />
             )}
           </FormItem>
         </div>
-        <div className={cx("from__item form__item_last-elem")}>
+        <div className={cx("from__item")}>
           <FormItem label="Время окончания" hasFeedback>
-            {getFieldDecorator("end-time", {
+            {getFieldDecorator("endTime", {
               initialValue: endTime,
               validateTrigger: ["onChange"],
-              rules: [{ required: true, message: "Введите  число" }]
+              rules: [{ required: true, message: {timePlaceholder} }]
             })(
               <TimePicker
                 disabledHours={disabledHours}
@@ -204,9 +204,32 @@ class ModalEvent extends React.Component<
                 hideDisabledOptions
                 popupClassName={cx("time-picker__popup")}
                 className={cx("time-picker")}
-                format="HH:mm"
+                format={timeFormat}
+                placeholder={timePlaceholder}
               />
             )}
+          </FormItem>
+        </div>
+        <div className={cx("form__item")}>
+          <FormItem label="Сотрудники" hasFeedback>
+            {getFieldDecorator("employees", {
+              initialValue: activity ? activity.employees.map(emp => emp._id) : [],
+              validateTrigger: ["onBlur", "onChange"],
+              rules: [{ required: true, message: "Выберите сотрудников" }]
+            })(
+              <Select mode="multiple" tokenSeparators={[","]}>
+                {employeeItems}
+              </Select>
+            )}
+          </FormItem>
+        </div>
+        <div className={cx("form__item form__item_last-elem")}>
+          <FormItem label="Аудитория" hasFeedback>
+            {getFieldDecorator("auditory", {
+              initialValue: activity ? activity.auditory._id : "",
+              validateTrigger: ["onBlur", "onChange"],
+              rules: [{ required: true, message: "Выберите аудиторию" }]
+            })(<Select>{auditoryItems}</Select>)}
           </FormItem>
         </div>
       </ModalForm>
@@ -214,7 +237,7 @@ class ModalEvent extends React.Component<
   }
 }
 
-const modal = Form.create()(ModalEvent);
+const modal = Form.create()(ModalActivity);
 
 export default connect<IStateToProps, IDispatchFromProps>(
   (state: IStore) => ({

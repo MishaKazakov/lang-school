@@ -37,7 +37,7 @@ class Menu extends React.Component<IProps> {
           onClick={onChangeCategory}
           open={category}
           name="Мероприятия"
-          url="event"
+          url="activity"
         />
         <MenuCategory
           onClick={onChangeCategory}

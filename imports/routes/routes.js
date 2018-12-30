@@ -26,7 +26,7 @@ export const renderRoutes = () => (
         <Switch>
           <Route
             exact
-            path="/(group|auditory|teacher|event|online)?"
+            path="/(group|auditory|teacher|event|activity|online)?"
             component={Main}
           />
           <Route exact path="/students" component={Students} />

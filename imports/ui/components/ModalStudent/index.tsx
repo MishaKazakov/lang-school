@@ -119,7 +119,7 @@ class ModalStudent extends React.Component<
             {getFieldDecorator(`group${key}_group`, {
               initialValue: group ? group._id : "",
               validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберете группу" }]
+              rules: [{ required: true, message: "Выберите группу" }]
             })(<Select>{groupItemsOptions}</Select>)}
           </FormItem>
         </div>
