@@ -7,7 +7,6 @@ export interface IStudent {
   group: {
     [groupId: string]: {
       _id: string;
-      name: string;
       numberLessons: number;
       attended: string[];
       miss: string[];

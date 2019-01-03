@@ -81,7 +81,7 @@ class ModalGroup extends React.Component<
   onDelete = () => {
     const _id = this.props.group._id;
     Groups.remove({ _id });
-    Events.remove({ group_id: _id });
+    Events.find({ group_id: _id }).count() && Events.remove({ group_id: _id });
   };
 
   getTeacherItems = (teachers: ITeacher[]) =>
@@ -137,7 +137,7 @@ class ModalGroup extends React.Component<
         </div>
         <div className={cx("from__item")}>
           <FormItem label="Число занятий" hasFeedback>
-            {getFieldDecorator("nubberOfClasses", {
+            {getFieldDecorator("numberOfClasses", {
               initialValue: group ? group.numberOfClasses : ""
             })(<InputNumber min={1} />)}
           </FormItem>

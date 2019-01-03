@@ -4,10 +4,17 @@ import { connect } from "react-redux";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { IStudent } from "../../../models/student";
+import { IGroup } from "../../../models/group";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
 import Button from "../Button";
+
+import { Students } from "../../../api/students";
+import { Groups } from "../../../api/groups";
+
+import { compose } from "redux";
+import { withTracker } from "meteor/react-meteor-data";
 
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
@@ -27,105 +34,126 @@ interface IDispatchFromProps {
   closeModal: typeof closeModal;
 }
 
-interface IState {
+interface IProps {
   student: IStudent;
+  groups: IGroup[];
+}
+
+interface IState {
+  groupList: any[];
 }
 
 const name = "student";
 
-let numGroups = [];
-
 class ModalStudent extends React.Component<
-  IStateToProps & IDispatchFromProps & FormProps,
+  IStateToProps & IDispatchFromProps & FormProps & IProps,
   IState
 > {
   constructor(props) {
     super(props);
-    this.state = {
-      student: null
-    };
+
+    this.state = { groupList: [] };
   }
 
-  onClose = () => {
-    this.setState({
-      student: null
-    });
-    this.props.closeModal(name);
-  };
   componentWillReceiveProps(nextProps) {
     if (!nextProps.modal[name] && this.props.modal[name]) {
-      numGroups = [];
+      this.setState({ groupList: [] });
+    }
+
+    if (nextProps.student && !this.props.student) {
+      const groupList = [];
+
+      for (const groupId in nextProps.student.group) {
+        groupList.push(groupId);
+      }
+      this.setState({ groupList });
     }
   }
 
-  getData = (_id: string) => {
-    setTimeout(() => {
-      this.setState({
-        student: {
-          _id: "1",
-          firstName: "Дима",
-          lastName: "Васнецов",
-          phone: "+79138603035",
-          group: {
-            g1: {
-              _id: "g1",
-              name: "Английский",
-              miss: [],
-              attended: [],
-              canceled: [],
-              numberLessons: 5
-            },
-            g2: {
-              _id: "g2",
-              name: "Французкий",
-              miss: [],
-              attended: [],
-              canceled: [],
-              numberLessons: 5
-            }
-          }
+  onClose = () => this.props.closeModal(name);
+
+  onSubmit = (data: IStudent | any) => {
+    const { student } = this.props;
+    const id = student && student._id;
+
+    if (id) {
+      Students.update(
+        { _id: id },
+        {
+          lastName: data.lastName,
+          firstName: data.firstName,
+          secondName: data.secondName,
+          phone: data.phone,
+          group: this.formGroupsToDB(data)
         }
+      );
+    } else {
+      Students.insert({
+        lastName: data.lastName,
+        firstName: data.firstName,
+        secondName: data.secondName,
+        phone: data.phone,
+        group: this.formGroupsToDB(data)
       });
-    }, 1000);
+    }
   };
 
-  getGroup = (student: IStudent, groupItemsOptions) => {
-    const items = [];
-    for (let groupId in student.group) {
-      const group = student.group[groupId];
-      items.push(this.getGroupItem({ group, groupItemsOptions }));
-    }
+  onDelete = () => Students.remove({ _id: this.props.student._id });
+
+  formGroupsToDB = data => {
+    const items = {};
+    const { student } = this.props;
+    const { groupList } = this.state;
+
+    groupList.length &&
+      groupList.forEach(groupNum => {
+        const groupId = data[`groupId${groupNum}`];
+        const studentData = student && student[groupNum];
+        items[groupId] = {
+          _id: groupId,
+          numberLessons: +data[`numLesson${groupNum}`],
+          attended: studentData ? studentData.attended : [],
+          miss: studentData ? studentData.miss : [],
+          canceled: studentData ? studentData.canceled : []
+        };
+      });
+
     return items;
   };
 
-  add = () => {
-    numGroups.push(Math.floor(Math.random() * 100));
-    this.forceUpdate();
+  addGroupField = () => {
+    const groupListCopy: number[] = this.state.groupList.slice(0);
+    groupListCopy.push(groupListCopy.length + 1);
+    this.setState({ groupList: groupListCopy });
   };
 
-  remove = i => {
-    numGroups = numGroups.filter(group => group != i);
-    this.forceUpdate();
-  };
+  removeGroupField = i =>
+    this.setState(prevState => ({
+      groupList: prevState.groupList.filter(group => group != i)
+    }));
 
-  getGroupItem = args => {
-    const { group = null, key = null, groupItemsOptions } = args;
-    const { getFieldDecorator } = this.props.form;
+  getGroupsFields = (groupList, options) =>
+    groupList.map(groupId => this.getGroupFormFields(groupId, options));
+
+  getGroupFormFields = (groupId, options) => {
+    const { student, form } = this.props;
+    const group = student && student.group[groupId];
+    const { getFieldDecorator } = form;
 
     return (
-      <div className={cx("form__group")} key={(group && group._id) || key}>
+      <div className={cx("form__group")} key={groupId}>
         <div className={cx("from__item")}>
           <FormItem label="Группа" hasFeedback>
-            {getFieldDecorator(`group${key}_group`, {
+            {getFieldDecorator(`groupId${groupId}`, {
               initialValue: group ? group._id : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Выберите группу" }]
-            })(<Select>{groupItemsOptions}</Select>)}
+            })(<Select>{options}</Select>)}
           </FormItem>
         </div>
         <div className={cx("from__item")}>
           <FormItem label="Количество занятий" hasFeedback>
-            {getFieldDecorator(`group${key}_lessons`, {
+            {getFieldDecorator(`numLesson${groupId}`, {
               initialValue: group ? group.numberLessons : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [
@@ -134,48 +162,33 @@ class ModalStudent extends React.Component<
             })(<InputNumber min={1} />)}
           </FormItem>
         </div>
-        {key ? (
-          <Icon
-            type="minus-circle-o"
-            className={cx("form__remove")}
-            onClick={() => this.remove(key)}
-          />
-        ) : (
-          ""
-        )}
+        <Icon
+          type="minus-circle-o"
+          className={cx("form__remove")}
+          onClick={() => this.removeGroupField(groupId)}
+        />
       </div>
     );
   };
 
+  getSelectOptions = items =>
+    items.map(item => (
+      <Option key={item._id} value={item._id}>
+        {item.name}
+      </Option>
+    ));
+
   render() {
-    const { form, modal } = this.props;
-    const { student } = this.state;
+    const { form, modal, student, groups } = this.props;
+    const { groupList } = this.state;
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
     const title = modalKind ? "Редактирование" : "Создание";
-    !student && modalKind && this.getData(modalKind);
     const isLoading = modalKind && !student;
 
-    const groupList = [
-      {
-        _id: "g1",
-        name: "Английский"
-      },
-      {
-        _id: "g2",
-        name: "Французкий"
-      }
-    ];
-    const groupItemsOptions = groupList.map(group => (
-      <Option value={group._id}>{group.name}</Option>
-    ));
-    const completedFields =
-      student && this.getGroup(student, groupItemsOptions);
-
-    const emptyFields = numGroups.map(key =>
-      this.getGroupItem({ key, groupItemsOptions })
-    );
+    const groupItems = this.getSelectOptions(groups);
+    const groupFields = this.getGroupsFields(groupList, groupItems);
 
     return (
       <ModalForm
@@ -183,7 +196,9 @@ class ModalStudent extends React.Component<
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
-        onSubmit={() => ""}
+        onSubmit={this.onSubmit}
+        onDelete={this.onDelete}
+        showDelete={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
@@ -230,10 +245,9 @@ class ModalStudent extends React.Component<
             })(<Input />)}
           </FormItem>
         </div>
-        {completedFields}
-        {emptyFields}
+        {groupFields}
         <div className={cx("form__button-add")}>
-          <Button onClick={this.add}>
+          <Button onClick={this.addGroupField}>
             <Icon type="plus" /> Добавить группу
           </Button>
         </div>
@@ -259,11 +273,23 @@ class ModalStudent extends React.Component<
 
 const modal = Form.create()(ModalStudent);
 
-export default connect<IStateToProps, IDispatchFromProps>(
-  (state: IStore) => ({
-    modal: state.modal
-  }),
-  dispatch => ({
-    closeModal: closeModal(dispatch)
+export default compose(
+  connect<IStateToProps, IDispatchFromProps>(
+    (state: IStore) => ({
+      modal: state.modal
+    }),
+    dispatch => ({
+      closeModal: closeModal(dispatch)
+    })
+  ),
+  withTracker<any, IProps & IStateToProps>(({ modal }) => {
+    const _id = modal.extra;
+    const student = _id && Students.findOne({ _id });
+    const groups = Groups.find().fetch();
+
+    return {
+      student,
+      groups
+    };
   })
 )(modal);

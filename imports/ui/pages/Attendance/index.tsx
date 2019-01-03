@@ -25,7 +25,6 @@ let students: IStudent[] = [
     group: {
       abc: {
         _id: "abc",
-        name: "Английский",
         miss: [],
         attended: [],
         canceled: [],
@@ -40,7 +39,6 @@ let students: IStudent[] = [
     group: {
       abc: {
         _id: "abc",
-        name: "Английский",
         miss: [],
         attended: [],
         canceled: [],
@@ -55,7 +53,6 @@ let students: IStudent[] = [
     group: {
       abc: {
         _id: "abc",
-        name: "Английский",
         miss: [],
         attended: [],
         canceled: [],
@@ -70,7 +67,6 @@ let students: IStudent[] = [
     group: {
       abc: {
         _id: "abc",
-        name: "Английский",
         miss: [],
         attended: [],
         canceled: ["1"],

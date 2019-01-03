@@ -71,7 +71,7 @@ class ModalActivity extends React.Component<
   onDelete = () => {
     const _id = this.props.activity._id;
     Activities.remove({ _id });
-    Events.remove({ group_id: _id });
+    Events.find({ group_id: _id }).count() && Events.remove({ group_id: _id });
   };
 
   render() {

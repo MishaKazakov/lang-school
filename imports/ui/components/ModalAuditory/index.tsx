@@ -66,7 +66,7 @@ class ModalAuditory extends React.Component<
   onDelete = () => {
     const _id = this.props.auditory._id;
 
-    Events.remove({ auditoryId: _id });
+    Events.find({ group_id: _id }).count() && Events.remove({ group_id: _id });
     Auditories.remove({ _id });
   };
 

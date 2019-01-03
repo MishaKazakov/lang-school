@@ -14,7 +14,7 @@ interface IProps {
   visible: boolean;
   isLoading: boolean;
   onClose: () => void;
-  onDelete?: () => void;
+  onDelete: () => void;
   onSubmit: (data) => void;
   showDelete?: boolean;
 }

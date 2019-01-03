@@ -1,11 +1,12 @@
-@import '../../styles/link.scss';
+@import "../../styles/link.scss";
 
 .students {
   padding: 0 20px;
 }
 
-.students__add {
-  padding: 10px 0;
+.students__panel {
   display: flex;
-  justify-content: flex-end;
+  padding: 10px 0;
+  margin-bottom: -50px;
+  justify-content: end;
 }

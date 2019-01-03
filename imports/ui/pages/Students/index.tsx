@@ -4,26 +4,38 @@ import StudentTable from "../../components/StudentTable";
 import { connect } from "react-redux";
 import { openModal } from "../../reducers/modalReducer";
 import ModalStudent from "../../components/ModalStudent";
-
+import Button from "../../components/Button";
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IDispatchFromProps {
   openModal: (name: string, extra?: any) => void;
 }
 
-class Students extends React.Component<IDispatchFromProps> {
+interface IState {
+  search: string;
+}
+
+class Students extends React.Component<IDispatchFromProps, IState> {
+  constructor(props) {
+    super(props);
+
+    this.state = { search: "" };
+  }
+
   editStudent = student => this.props.openModal("student", student);
   addStudent = () => this.props.openModal("student");
+
+  onSearch = val => console.log(val);
 
   render() {
     return (
       <Layout>
         <ModalStudent />
         <div className={cx("students")}>
-          <div className={cx("students__add")}>
-            <span onClick={this.addStudent} className={cx("link")}>
+          <div className={cx("students__panel")}>
+            <Button onClick={this.addStudent} type={Button.TYPE.PRIMARY}>
               Добавить студента
-            </span>
+            </Button>
           </div>
           <StudentTable edit={this.editStudent} />
         </div>
