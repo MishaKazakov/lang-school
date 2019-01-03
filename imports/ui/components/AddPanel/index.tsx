@@ -4,20 +4,22 @@ import Button from "../Button";
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IProps {
+  title: string | boolean;
   hide?: boolean;
   onClick: () => void;
 }
 
 class AddPanel extends React.Component<IProps> {
   render() {
-    const { hide, onClick } = this.props;
+    const { title, hide, onClick } = this.props;
 
     return (
       <div className={cx("add-panel")}>
+        <div className={cx("add-panel__title")}>{title}</div>
         <Button
           onClick={onClick}
           type={Button.TYPE.PRIMARY}
-          className={cx({ "add-panel__button_hide": hide })}
+          className={cx({ "add-panel_hide": hide })}
         >
           Добавить
         </Button>

@@ -14,6 +14,7 @@
   padding: 5px;
   overflow: hidden;
   color: $text-color;
+  font-size: 12px;
   background-color: aquamarine;
   border-radius: 7px;
   border-top-left-radius: 0;
@@ -28,40 +29,32 @@
   }
 }
 
-.event__name {
+.event__name-wrapper {
   position: absolute;
   top: 5px;
   left: 5px;
   overflow: hidden;
-  flex: 0 1 auto;
+}
+
+.event__name {
+  width: 300px;
 }
 
 .event__time {
-  margin-top: 22px;
-}
-
-.event__auditory {
-  margin-top: 5px;
+  margin-top: 15px;
 }
 
 .event__edit {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  padding: 8px;
+  display: block;
+  border: none;
+  padding: 0;
+  right: 10px;
+  bottom: 3px;
+  background-color: transparent;
+  cursor: pointer;
 }
 
 .edit {
   font-size: 17px;
-}
-
-.popover {
-  display: flex;
-  flex-direction: column;
-}
-
-.popover__button {
-  & + & {
-    margin-top: 10px;
-  }
 }

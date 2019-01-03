@@ -3,21 +3,22 @@ import { connect } from "react-redux";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { IActivity } from "../../../models/activity";
-import { IAuditory } from "../../../models/auditory";
-import { ITeacher } from "../../../models/teacher";
-import { IAuditoryData } from "../../../models/auditoryData";
+import { IEvent } from "../../../models/event";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
-import * as moment from "moment";
+
+import { Activities } from "../../../api/activities";
+import { Events } from "../../../api/events";
+
+import { compose } from "redux";
+import { withTracker } from "meteor/react-meteor-data";
 
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Input = require("antd/lib/input");
-const Select = require("antd/lib/select");
-const Option = Select.Option;
-const DatePicker = require("antd/lib/date-picker");
-const TimePicker = require("antd/lib/time-picker").default;
+const InputNum = require("antd/lib/input-number");
+const Checkbox = require("antd/lib/checkbox");
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -29,122 +30,57 @@ interface IDispatchFromProps {
   closeModal: typeof closeModal;
 }
 
-interface IState {
+interface IDataProps {
+  activity: any;
+}
+
+interface IProps {
   activity: IActivity;
-  auditoryData: IAuditoryData;
-  auditories: IAuditory[];
-  employees: ITeacher[];
+  activityEvents: IEvent[];
 }
 
 const name = "activity";
 
 class ModalActivity extends React.Component<
-  IStateToProps & IDispatchFromProps & FormProps,
-  IState
+  IStateToProps & IDispatchFromProps & FormProps & IProps
 > {
-  constructor(props) {
-    super(props);
-    this.state = {
-      activity: null,
-      auditoryData: null,
-      auditories: [
-        { _id: "aud1", name: "Нью-Йорк", capacity: 10 },
-        { _id: "aud2", name: "Лондон", capacity: 10 },
-        { _id: "aud3", name: "Париж", capacity: 10 }
-      ],
-      employees: [
-        { _id: "emp1", firstName: "qwe", lastName: "rty" },
-        { _id: "emp2", firstName: "qwe", lastName: "rty" },
-        { _id: "emp3", firstName: "qwe", lastName: "rty" }
-      ]
-    };
-  }
+  onClose = () => this.props.closeModal(name);
 
-  onClose = () => {
-    this.setState({
-      activity: null
-    });
-    this.props.closeModal(name);
-  };
+  onSubmit = (data: IActivity) => {
+    const { activity } = this.props;
+    const id = activity && activity._id;
 
-  getData = (_id: string) => {
-    setTimeout(() => {
-      this.setState({
-        activity: {
-          _id: "1",
-          name: "123",
-          date: new Date(Date.now()),
-          group: "123",
-          timeStart: [12, 0],
-          timeEnd: [13, 0],
-          employees: [{ _id: "emp1", firstName: "qwe", lastName: "rty" }],
-          auditory: { _id: "aud1", name: "Нью-Йорк"}
-        },
-        auditoryData: {
-          _id: "data1",
-          auditory_id: "1",
-          date: new Date(),
-          occupied: {
-            13: [0, 45],
-            16: [45, 59],
-            17: [0, 30]
-          }
+    if (id) {
+      Activities.update(
+        { _id: id },
+        {
+          name: data.name,
+          numberOfClasses: data.numberOfClasses,
+          isInfinite: data.isInfinite
         }
+      );
+    } else {
+      Activities.insert({
+        name: data.name,
+        numberOfClasses: data.numberOfClasses,
+        isInfinite: data.isInfinite
       });
-    }, 1000);
-  };
-
-  getAuditoryItems = () =>
-    this.state.auditories.map(auditory => (
-      <Option key={auditory._id} value={auditory._id}>
-        {auditory.name}
-      </Option>
-    ));
-
-  getMomentTime = time =>
-    moment().set({
-      hours: time[0],
-      minutes: time[1]
-    });
-
-  getDisabledMinutes = (hour: number) => {
-    let minutes = [];
-    const interval = this.state.auditoryData.occupied[hour];
-
-    if (interval) {
-      for (let i = interval[0]; i < interval[1] + 1; i++) {
-        minutes.push(i);
-      }
     }
-
-    return minutes;
   };
 
-  getEmployeeItems = () =>
-    this.state.employees.map(employee => (
-      <Option key={employee._id} value={employee._id}>
-        {employee.firstName} {employee.lastName}
-      </Option>
-    ));
+  onDelete = () => {
+    const _id = this.props.activity._id;
+    Activities.remove({ _id });
+    Events.remove({ group_id: _id });
+  };
 
   render() {
-    const { form, modal } = this.props;
-    const { activity } = this.state;
+    const { form, modal, activity } = this.props;
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
     const title = modalKind ? "Редактирование" : "Создание";
-    !activity && modalKind && this.getData(modalKind);
     const isLoading = modalKind && !activity;
-
-    const timeFormat = "HH:mm";
-    const datePlaceholder = "Введите дату";
-    const timePlaceholder = "Введите время";
-    const auditoryItems = this.getAuditoryItems();
-    const employeeItems = this.getEmployeeItems();
-    const disabledHours = () => [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
-    const beginTime = activity && this.getMomentTime(activity.timeStart);
-    const endTime = activity && this.getMomentTime(activity.timeEnd);
 
     return (
       <ModalForm
@@ -152,9 +88,12 @@ class ModalActivity extends React.Component<
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
+        onSubmit={this.onSubmit}
+        onDelete={this.onDelete}
+        showDelete={modalKind}
         isLoading={isLoading}
       >
-        <div className={cx("form__item")}>
+        <div className={cx("from__item ")}>
           <FormItem label="Название" hasFeedback>
             {getFieldDecorator("name", {
               initialValue: activity ? activity.name : "",
@@ -163,73 +102,20 @@ class ModalActivity extends React.Component<
             })(<Input />)}
           </FormItem>
         </div>
-        <div className={cx("form__item")}>
-          <FormItem label="Дата" hasFeedback>
-            {getFieldDecorator("date", {
-              initialValue: activity ? moment(activity.date) : null,
-              validateTrigger: ["onChange"],
-              rules: [{ required: true, message: {datePlaceholder} }]
-            })(<DatePicker placeholder={datePlaceholder} />)}
-          </FormItem>
-        </div>
         <div className={cx("from__item")}>
-          <FormItem label="Время начала" hasFeedback>
-            {getFieldDecorator("beginTime", {
-              initialValue: beginTime,
-              validateTrigger: ["onChange"],
-              rules: [{ required: true, message: {timePlaceholder} }]
-            })(
-              <TimePicker
-                disabledHours={disabledHours}
-                disabledMinutes={this.getDisabledMinutes}
-                hideDisabledOptions
-                popupClassName={cx("time-picker__popup")}
-                className={cx("time-picker")}
-                format={timeFormat}
-                placeholder={timePlaceholder}
-              />
-            )}
+          <FormItem label="Количество занятий" hasFeedback>
+            {getFieldDecorator("numberOfClasses", {
+              initialValue: activity ? activity.numberOfClasses : 1
+            })(<InputNum min={1} />)}
           </FormItem>
         </div>
-        <div className={cx("from__item")}>
-          <FormItem label="Время окончания" hasFeedback>
-            {getFieldDecorator("endTime", {
-              initialValue: endTime,
-              validateTrigger: ["onChange"],
-              rules: [{ required: true, message: {timePlaceholder} }]
-            })(
-              <TimePicker
-                disabledHours={disabledHours}
-                disabledMinutes={this.getDisabledMinutes}
-                hideDisabledOptions
-                popupClassName={cx("time-picker__popup")}
-                className={cx("time-picker")}
-                format={timeFormat}
-                placeholder={timePlaceholder}
-              />
+        <div
+          className={cx("from__item form__item_last-elem form__item__checkbox")}
+        >
+          <FormItem label="Постоянное" hasFeedback>
+            {getFieldDecorator("isInfinite", { initialValue: undefined })(
+              <Checkbox />
             )}
-          </FormItem>
-        </div>
-        <div className={cx("form__item")}>
-          <FormItem label="Сотрудники" hasFeedback>
-            {getFieldDecorator("employees", {
-              initialValue: activity ? activity.employees.map(emp => emp._id) : [],
-              validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберите сотрудников" }]
-            })(
-              <Select mode="multiple" tokenSeparators={[","]}>
-                {employeeItems}
-              </Select>
-            )}
-          </FormItem>
-        </div>
-        <div className={cx("form__item form__item_last-elem")}>
-          <FormItem label="Аудитория" hasFeedback>
-            {getFieldDecorator("auditory", {
-              initialValue: activity ? activity.auditory._id : "",
-              validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберите аудиторию" }]
-            })(<Select>{auditoryItems}</Select>)}
           </FormItem>
         </div>
       </ModalForm>
@@ -239,11 +125,21 @@ class ModalActivity extends React.Component<
 
 const modal = Form.create()(ModalActivity);
 
-export default connect<IStateToProps, IDispatchFromProps>(
-  (state: IStore) => ({
-    modal: state.modal
-  }),
-  dispatch => ({
-    closeModal: closeModal(dispatch)
+export default compose(
+  connect<IStateToProps, IDispatchFromProps>(
+    (state: IStore) => ({
+      modal: state.modal
+    }),
+    dispatch => ({
+      closeModal: closeModal(dispatch)
+    })
+  ),
+  withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
+    const _id = modal.extra;
+    const activity = _id && Activities.findOne({ _id });
+
+    return {
+      activity
+    };
   })
 )(modal);

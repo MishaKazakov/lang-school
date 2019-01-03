@@ -8,6 +8,7 @@ import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
 
 import { Auditories } from "../../../api/auditories";
+import { Events } from "../../../api/events";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -40,12 +41,7 @@ const name = "auditory";
 class ModalAuditory extends React.Component<
   IStateToProps & IDispatchFromProps & FormProps & IProps
 > {
-  onClose = () => {
-    this.setState({
-      auditory: null
-    });
-    this.props.closeModal(name);
-  };
+  onClose = () => this.props.closeModal(name);
 
   onSubmit = (data: IAuditory) => {
     const { auditory } = this.props;
@@ -67,6 +63,13 @@ class ModalAuditory extends React.Component<
     }
   };
 
+  onDelete = () => {
+    const _id = this.props.auditory._id;
+
+    Events.remove({ auditoryId: _id });
+    Auditories.remove({ _id });
+  };
+
   render() {
     const { form, modal, auditory } = this.props;
     const { getFieldDecorator } = form;
@@ -81,6 +84,8 @@ class ModalAuditory extends React.Component<
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
+        onDelete={this.onDelete}
+        showDelete={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
@@ -119,15 +124,10 @@ export default compose(
   ),
   withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
     const _id = modal.extra;
-
-    if (_id) {
-      return {
-        auditory: Auditories.findOne({ _id })
-      };
-    }
+    const auditory = _id && Auditories.findOne({ _id });
 
     return {
-      auditory: null
+      auditory
     };
   })
 )(modal);

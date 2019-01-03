@@ -1,5 +1,6 @@
 import * as React from "react";
 import Button from "../Button";
+import ModalConfirmDelete from "../ModalConfirmDelete";
 
 const Modal = require("antd/lib/modal");
 const Loader = require("antd/lib/spin");
@@ -13,10 +14,23 @@ interface IProps {
   visible: boolean;
   isLoading: boolean;
   onClose: () => void;
-  onSubmit?: (data) => void;
+  onDelete?: () => void;
+  onSubmit: (data) => void;
+  showDelete?: boolean;
 }
 
-class ModalForm extends React.Component<IProps> {
+interface IState {
+  isConfirmVisible: boolean;
+}
+
+class ModalForm extends React.Component<IProps, IState> {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      isConfirmVisible: false
+    };
+  }
   onClose = () => {
     this.props.form.resetFields();
     this.props.onClose && this.props.onClose();
@@ -33,8 +47,18 @@ class ModalForm extends React.Component<IProps> {
     });
   };
 
+  toggleConfirm = () =>
+    this.setState(state => ({ isConfirmVisible: !state.isConfirmVisible }));
+
+  onDeleteConfirmed = () => {
+    this.toggleConfirm();
+    this.props.onDelete && this.props.onDelete();
+    this.onClose();
+  };
+
   render() {
-    const { visible, children, title, isLoading } = this.props;
+    const { visible, children, title, isLoading, showDelete } = this.props;
+    const { isConfirmVisible } = this.state;
 
     return (
       <Modal
@@ -42,6 +66,16 @@ class ModalForm extends React.Component<IProps> {
         title={title}
         onCancel={this.onClose}
         footer={[
+          showDelete && (
+            <Button
+              key="delete"
+              type={Button.TYPE.DANGER}
+              className={cx("form__delete-button")}
+              onClick={this.toggleConfirm}
+            >
+              Удалить
+            </Button>
+          ),
           <Button
             key="close"
             className={cx("form__button")}
@@ -60,6 +94,11 @@ class ModalForm extends React.Component<IProps> {
           </Button>
         ]}
       >
+        <ModalConfirmDelete
+          visible={isConfirmVisible}
+          onCancelClick={this.toggleConfirm}
+          onConfirmClick={this.onDeleteConfirmed}
+        />
         <Form onClose={this.onClose}>
           {isLoading ? (
             <div className={cx("form__loader")}>
