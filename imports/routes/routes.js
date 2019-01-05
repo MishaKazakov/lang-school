@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 
 const LocaleProvider = require("antd/lib/locale-provider");
 import ru_RU from "antd/lib/locale-provider/ru_RU";
-import moment from "moment";
+import * as moment from "moment";
 import "moment/locale/ru";
 moment.locale("ru");
 

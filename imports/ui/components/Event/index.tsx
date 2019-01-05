@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { IEvent } from "../../../models/event";
 import { formatTime } from "../../../helpers/string";
+import { IAuditory } from "../../../models/auditory";
 import Button from "../Button";
 
 import { connect } from "react-redux";
@@ -14,6 +15,7 @@ const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IProps {
   event: IEvent;
+  auditories: IAuditory[];
 }
 
 interface IDispatchFromProps {
@@ -55,13 +57,17 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
   );
 
   render() {
-    const { event } = this.props;
+    const { event, auditories } = this.props;
 
     const startPosition = this.getPosition(event.timeStart);
     const duration = this.getDuration(event.timeStart, event.timeEnd);
 
     const startTime = formatTime(event.timeStart);
     const endTime = formatTime(event.timeEnd);
+
+    const auditoryName =
+      auditories &&
+      auditories.find(auditory => auditory._id === event.auditoryId).name;
 
     return (
       <div
@@ -74,7 +80,7 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
             с {startTime} до {endTime}
           </div>
           {duration > 45 && (
-            <div className={cx("event__auditory")}>{event.auditory.name}</div>
+            <div className={cx("event__auditory")}>{auditoryName}</div>
           )}
         </Link>
         <Popover content={this.popoverContent} placement="right">
