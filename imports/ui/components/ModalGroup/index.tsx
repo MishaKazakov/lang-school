@@ -4,6 +4,7 @@ import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { ITeacher } from "../../../models/teacher";
 import { IGroup } from "../../../models/group";
+import { IEvent } from "../../../models/event";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
@@ -11,6 +12,7 @@ import * as moment from "moment";
 
 import { Groups } from "../../../api/groups";
 import { Teachers } from "../../../api/teachers";
+import { Events } from "../../../api/events";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -42,6 +44,7 @@ interface IDataProps {
 interface IProps {
   group: IGroup;
   teachers: ITeacher[];
+  groupEvents: IEvent[];
 }
 
 const name = "group";
@@ -75,6 +78,12 @@ class ModalGroup extends React.Component<
     }
   };
 
+  onDelete = () => {
+    const _id = this.props.group._id;
+    Groups.remove({ _id });
+    Events.remove({ group_id: _id });
+  };
+
   getTeacherItems = (teachers: ITeacher[]) =>
     teachers.map(teacher => (
       <Option key={teacher._id} value={teacher._id}>{`${teacher.lastName} ${
@@ -97,6 +106,8 @@ class ModalGroup extends React.Component<
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
+        onDelete={this.onDelete}
+        showDelete={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
@@ -149,17 +160,11 @@ export default compose(
   ),
   withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
     const _id = modal.extra;
+    const group = _id && Groups.findOne({ _id });
     const teachers = Teachers.find().fetch();
 
-    if (_id) {
-      return {
-        group: Groups.findOne({ _id }),
-        teachers
-      };
-    }
-
     return {
-      group: null,
+      group,
       teachers
     };
   })

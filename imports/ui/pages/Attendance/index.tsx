@@ -10,11 +10,11 @@ const cx = require("classnames/bind").bind(require("./style.scss"));
 const event: IEvent = {
   _id: "1",
   name: "Английский",
-  group: "abc",
+  groupId: "abc",
   date: new Date(),
   timeStart: [10, 30],
   timeEnd: [12, 0],
-  auditoryId: "12"
+  auditoryId: "wYAwfXSYeDMPgXv9w",
 };
 
 let students: IStudent[] = [
@@ -109,7 +109,7 @@ class Attendance extends React.Component {
 
   changeStudentStatus = (id: string) => {
     let student = students.find(student => student._id === id);
-    const groupId = event.group;
+    const groupId = event.groupId;
     const group = student.group[groupId];
     const eventId = event._id;
 

@@ -183,6 +183,7 @@ class ModalStudent extends React.Component<
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
+        onSubmit={() => ""}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>

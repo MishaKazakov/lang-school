@@ -19,7 +19,21 @@
   margin-left: 10px;
 }
 
+.form__delete-button {
+  float: left;
+}
+
 .form__loader {
   padding: 16px 0;
   text-align: center;
+}
+
+.form__date {
+  max-width: 280px;
+}
+
+.form__item__checkbox {
+  & .ant-form-item-children-icon {
+    right: -25px !important;
+  }
 }

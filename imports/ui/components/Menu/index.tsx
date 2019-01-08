@@ -6,45 +6,29 @@ const cx = require("classnames/bind").bind(require("./style.scss"));
 interface IProps {
   className?: string;
   category: string;
-  onChangeCategory: (category: string) => void;
+  categories: { name: string; url: string }[];
+  onChangeCategory: (categoryName: string, categoryTitle: string) => void;
 }
 
 class Menu extends React.Component<IProps> {
+  onChangeCategory = (categoryName, categoryTitle) =>
+    this.props.onChangeCategory &&
+    this.props.onChangeCategory(categoryName, categoryTitle);
+
   render() {
-    const { className, category, onChangeCategory } = this.props;
+    const { className, category, onChangeCategory, categories } = this.props;
 
     return (
       <div className={cx("panel", className)}>
-        <MenuCategory
-          onClick={onChangeCategory}
-          open={category}
-          name="Группы"
-          url="group"
-        />
-        <MenuCategory
-          onClick={onChangeCategory}
-          open={category}
-          name="Аудитории"
-          url="auditory"
-        />
-        <MenuCategory
-          onClick={onChangeCategory}
-          open={category}
-          name="Преродаватели"
-          url="teacher"
-        />
-        <MenuCategory
-          onClick={onChangeCategory}
-          open={category}
-          name="Мероприятия"
-          url="activity"
-        />
-        <MenuCategory
-          onClick={onChangeCategory}
-          open={category}
-          name="Онлайн"
-          url="online"
-        />
+        {categories.map(item => (
+          <MenuCategory
+            key={item.name}
+            onClick={onChangeCategory}
+            open={category}
+            name={item.name}
+            url={item.url}
+          />
+        ))}
       </div>
     );
   }

@@ -71,6 +71,8 @@ class ModalTeacher extends React.Component<
     }
   };
 
+  onDelete = () => Teachers.remove({ _id: this.props.teacher._id });
+
   render() {
     const { form, modal, teacher } = this.props;
     const { getFieldDecorator } = form;
@@ -85,6 +87,8 @@ class ModalTeacher extends React.Component<
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
+        onDelete={this.onDelete}
+        showDelete={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
@@ -164,15 +168,10 @@ export default compose(
   ),
   withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
     const _id = modal.extra;
-
-    if (_id) {
-      return {
-        teacher: Teachers.findOne({ _id })
-      };
-    }
+    const teacher = _id && Teachers.findOne({ _id });
 
     return {
-      teacher: null
+      teacher
     };
   })
 )(modal);

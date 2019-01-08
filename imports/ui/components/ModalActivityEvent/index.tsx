@@ -3,7 +3,9 @@ import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { IAuditory } from "../../../models/auditory";
 import { IEvent } from "../../../models/event";
-import { IGroup } from "../../..//models/group";
+import { IGroup } from "../../../models/group";
+import { ITeacher } from "../../../models/teacher";
+import { IActivity } from "../../../models/activity";
 import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
@@ -15,7 +17,8 @@ import { closeModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
 import { Events } from "../../../api/events";
-import { Groups } from "../../../api/groups";
+import { Activities } from "../../../api/activities";
+import { Teachers } from "../../../api/teachers";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -43,39 +46,40 @@ interface IDispatchFromProps {
 interface IProps {
   auditories?: IAuditory[];
   events?: IEvent[];
+  teachers: ITeacher[];
   event?: IEvent;
-  group: IGroup;
+  activity: IActivity;
   futureEvents?: IEvent[];
 }
 
-const name = "element-group";
+const name = "element-activity";
 
 let queryDate = new ReactiveVar(null);
 let queryAuditoryId = new ReactiveVar(null);
+let queryTeachersId = new ReactiveVar(null);
 let queryFutureEvents = new ReactiveVar(null);
 
-class ModalEvent extends React.Component<
+class ModalActivityEvent extends React.Component<
   IStateToProps & IDispatchFromProps & FormProps & IProps
 > {
   onClose = () => this.props.closeModal(name);
 
   onSubmit = (data: IEvent) => {
-    const { event, futureEvents } = this.props;
+    const { event, futureEvents, activity } = this.props;
     const id = event && event._id;
-    const group = this.props.group;
     const timeStart = formatMomentToDb(data.timeStart);
     const timeEnd = formatMomentToDb(data.timeEnd);
     const date: Date = data.date.toDate();
-    const isInfinite = !group.numberOfClasses;
+    const isInfinite = activity.isInfinite;
 
     if (id) {
       Events.update(
         { _id: id },
         {
-          name: group.name,
+          groupId: activity._id,
+          name: activity.name,
           auditoryId: data.auditoryId,
-          teachersId: group.teacherId,
-          groupId: group._id,
+          teachersId: data.teachersId,
           date: date,
           timeStart,
           timeEnd,
@@ -91,11 +95,11 @@ class ModalEvent extends React.Component<
           Events.update(
             { _id: event._id },
             {
-              name: group.name,
+              groupId: activity._id,
+              name: activity.name,
               auditoryId: data.auditoryId,
-              teachersId: group.teacherId,
-              groupId: group._id,
-              date: nextDay,
+              teachersId: data.teachersId,
+              date: date,
               timeStart,
               timeEnd,
               isInfinite
@@ -103,17 +107,17 @@ class ModalEvent extends React.Component<
           );
         });
     } else {
-      const numClasses = group.numberOfClasses || 10;
+      const numClasses = activity.numberOfClasses || 1;
       for (let i = 0; i < numClasses; i++) {
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 7 * i);
 
         Events.insert({
-          name: group.name,
+          groupId: activity._id,
+          name: activity.name,
           auditoryId: data.auditoryId,
-          teachersId: group.teacherId,
-          groupId: group._id,
-          date: nextDay,
+          teachersId: data.teachersId,
+          date: date,
           timeStart,
           timeEnd,
           isInfinite
@@ -122,18 +126,12 @@ class ModalEvent extends React.Component<
     }
   };
 
-  onDelete = () => {
-    const { event, futureEvents } = this.props;
-    const _id = event && event._id;
+  onDelete = () => Events.remove({ _id: this.props.event._id });
 
-    Events.remove({ _id });
-    futureEvents.forEach(event => Events.remove({ _id: event._id }));
-  };
-
-  getAuditoryItems = () =>
-    this.props.auditories.map(auditory => (
-      <Option key={auditory._id} value={auditory._id}>
-        {auditory.name}
+  getSelectItems = items =>
+    items.map(item => (
+      <Option key={item._id} value={item._id}>
+        {item.name ? item.name : `${item.lastName} ${item.firstName}`}
       </Option>
     ));
 
@@ -158,19 +156,34 @@ class ModalEvent extends React.Component<
     return minutes;
   };
 
+  checkTimeStatus = (rule, value, callback) => {
+    const { timeStart, timeEnd }: any = this.props.form.getFieldsValue([
+      "timeStart",
+      "timeEnd"
+    ]);
+
+    if (timeStart && timeEnd && timeStart > timeEnd) {
+      callback(true);
+    } else {
+      callback();
+    }
+  };
+
   onDateChange = newDate => queryDate.set(newDate.toDate());
   onAuditoryChange = newAuditory => queryAuditoryId.set(newAuditory);
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
+  onTeacherChange = teachers => queryTeachersId.set(teachers);
 
   render() {
-    const { form, modal, event } = this.props;
+    const { form, modal, event, auditories, teachers } = this.props;
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
     const title = modalKind ? "Редактирование" : "Создание";
     const isLoading = modalKind && !event;
 
-    const auditoryItems = this.getAuditoryItems();
+    const auditoryItems = this.getSelectItems(auditories);
+    const teacherItems = this.getSelectItems(teachers);
 
     const beginTime = event && this.getMomentTime(event.timeStart);
     const endTime = event && this.getMomentTime(event.timeEnd);
@@ -185,8 +198,8 @@ class ModalEvent extends React.Component<
         onClose={this.onClose}
         onSubmit={this.onSubmit}
         onDelete={this.onDelete}
-        isLoading={isLoading}
         showDelete={!!event}
+        isLoading={isLoading}
       >
         <div className={cx("from__item form__date")}>
           <FormItem label="Дата" hasFeedback>
@@ -195,6 +208,17 @@ class ModalEvent extends React.Component<
               validateTrigger: ["onChange"],
               rules: [{ required: true, message: "Выберете дату" }]
             })(<DatePicker onChange={this.onDateChange} />)}
+          </FormItem>
+        </div>
+        <div className={cx("from__item")}>
+          <FormItem label="Преподаватели" hasFeedback>
+            {getFieldDecorator("teachersId", {
+              initialValue: event ? event.teachersId : undefined
+            })(
+              <Select mode="multiple" onChange={this.onTeacherChange}>
+                {teacherItems}
+              </Select>
+            )}
           </FormItem>
         </div>
         <div className={cx("from__item")}>
@@ -213,7 +237,13 @@ class ModalEvent extends React.Component<
             {getFieldDecorator("timeStart", {
               initialValue: beginTime,
               validateTrigger: ["onChange"],
-              rules: [{ required: true, message: "Выберете время" }]
+              rules: [
+                { required: true, message: "Выберете время" },
+                {
+                  validator: this.checkTimeStatus,
+                  message: "Время окончания не может быть раньше начала"
+                }
+              ]
             })(
               <TimePicker
                 disabledHours={disabledHours}
@@ -231,7 +261,13 @@ class ModalEvent extends React.Component<
             {getFieldDecorator("timeEnd", {
               initialValue: endTime,
               validateTrigger: ["onChange"],
-              rules: [{ required: true, message: "Выберете время" }]
+              rules: [
+                { required: true, message: "Выберете время" },
+                {
+                  validator: this.checkTimeStatus,
+                  message: "Время окончания не может быть раньше начала"
+                }
+              ]
             })(
               <TimePicker
                 disabledHours={disabledHours}
@@ -262,7 +298,7 @@ class ModalEvent extends React.Component<
   }
 }
 
-const modal = Form.create()(ModalEvent);
+const modal = Form.create()(ModalActivityEvent);
 
 export default compose(
   connect<IStateToProps, IDispatchFromProps>(
@@ -276,12 +312,13 @@ export default compose(
   withTracker<any, IProps & IStateToProps>(({ modal }) => {
     const _id = modal.extra;
     const event: any = _id && Events.findOne({ _id });
-    const group: any = Groups.findOne({ _id: modal.groupId });
+    const activity: any = Activities.findOne({ _id: modal.groupId });
     const date = queryDate.get() || (event && event.date);
+    const teacherId = queryTeachersId.get() || (event && event.teachersId);
     const eventsQuery = getEventsQuery({
       date,
       auditoryId: queryAuditoryId.get(),
-      teacherId: group && group.teacherId
+      teacherId
     });
     const isFutureEvents = queryFutureEvents.get();
     const futureEvents =
@@ -291,8 +328,9 @@ export default compose(
     return {
       event,
       auditories: Auditories.find().fetch(),
+      teachers: Teachers.find().fetch(),
       events: Events.find(eventsQuery).fetch(),
-      group,
+      activity,
       futureEvents
     };
   })

@@ -1,9 +1,13 @@
 .add-panel {
   display: flex;
-  justify-content: end;
-  padding: 8px 0;
+  justify-content: space-between;
+  padding: 8px 0 8px 20px;
 }
 
-.add-panel__button_hide {
+.add-panel_hide {
   visibility: hidden;
+}
+
+.add-panel__title {
+  font-size: 22px;
 }

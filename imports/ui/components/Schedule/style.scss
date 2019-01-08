@@ -4,6 +4,7 @@
 
 .schedule__table {
   position: relative;
+  height: 900px;
   background-color: white;
 }
 
@@ -11,4 +12,12 @@
   height: 50px;
   margin-left: 49px;
   background-color: white;
+}
+
+.schedule__nogroup {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: xx-large;
 }

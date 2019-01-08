@@ -1,8 +1,9 @@
 import * as React from "react";
 import Event from "../Event";
+import { withTracker } from "meteor/react-meteor-data";
 import { IEvent } from "../../../models/event";
 import { IAuditory } from "../../../models/auditory";
-import { withTracker } from "meteor/react-meteor-data";
+
 import { Events } from "../../../api/events";
 import { Auditories } from "../../../api/auditories";
 
@@ -16,12 +17,14 @@ interface IDataProps {
 interface IProps {
   date: Date;
   events?: IEvent[];
-  auditories?: IAuditory;
+  auditories?: IAuditory[];
+  itemId: string;
 }
 
 // чтобы занятие появилось нужно открыть другую консоль
 // войти в режим редактирования meteor mongo
-// и вставить db.events.insert({name:"Английский", date: new Date(), timeStart: [12,0], timeEnd:[14,0], auditory:{name: "Нью-Йорк"}})
+// и вставить
+// db.events.insert({name:"Английский", date: new Date(), timeStart: [12,0], timeEnd:[14,0], auditoryId: "wYAwfXSYeDMPgXv9w" })
 
 class Grid extends React.Component<IProps & IDataProps> {
   prepareEvents = (events: IEvent[]) => {
@@ -41,9 +44,9 @@ class Grid extends React.Component<IProps & IDataProps> {
   };
 
   render() {
-    const { auditories } = this.props;
+    const { events, auditories, itemId } = this.props;
     const times = Array.from({ length: 15 }, (v, i) => i + 1);
-    const schedule = this.prepareEvents(this.props.events);
+    const schedule = this.prepareEvents(events);
 
     return (
       <div className={cx("grid")}>
@@ -55,7 +58,12 @@ class Grid extends React.Component<IProps & IDataProps> {
             <div key={i} className={cx("gird__column")}>
               {day.length !== 0 &&
                 day.map(e => (
-                  <Event auditories={auditories} key={e._id} event={e} />
+                  <Event
+                    itemId={itemId}
+                    auditories={auditories}
+                    event={e}
+                    key={e._id}
+                  />
                 ))}
             </div>
           ))}
@@ -65,16 +73,17 @@ class Grid extends React.Component<IProps & IDataProps> {
   }
 }
 
-export default withTracker<IDataProps, IProps>(({ date: monday }) => {
-  const sunday = new Date(monday.getTime());
-  sunday.setDate(monday.getDate() + 7);
+export default withTracker<IDataProps, IProps>(({ date: monday, itemId }) => {
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
 
   return {
     events: Events.find({
       date: {
-        $gte: monday,
-        $lt: sunday
-      }
+        $lte: sunday,
+        $gte: monday
+      },
+      $or: [{ auditoryId: itemId }, { teachersId: itemId }, { groupId: itemId }]
     }).fetch(),
     auditories: Auditories.find().fetch()
   };

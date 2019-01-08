@@ -5,6 +5,7 @@ import Button from "../Button";
 import MenuItem from "../MenuItem";
 import { openModal } from "../../reducers/modalReducer";
 
+import { Activities } from "../../../api/activities";
 import { Auditories } from "../../../api/auditories";
 import { Teachers } from "../../../api/teachers";
 import { Groups } from "../../../api/groups";
@@ -24,7 +25,7 @@ const propsItems = [
 ];
 
 interface IDispatchFromProps {
-  openModal: (name: string, extra?: any) => void;
+  openModal: (name: string, extra?: any, group?: string) => void;
 }
 
 interface IDataProps {
@@ -35,7 +36,7 @@ interface IProps {
   name: string;
   url: string;
   open: string;
-  onClick: (url: string) => void;
+  onClick: (categoryName: string, categoryTitle: string) => void;
   items?: any;
 }
 
@@ -47,7 +48,7 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
     const { name, url, open, items } = this.props;
     const address = "/" + url;
     const isOpen = open === url;
-    const onClick = () => this.props.onClick(url);
+    const onClick = () => this.props.onClick(url, name);
 
     return (
       <div className={cx("menu-category")}>
@@ -101,9 +102,14 @@ export default compose(
           items: Teachers.find().fetch()
         };
       case "group":
-        return{
+        return {
           items: Groups.find().fetch()
-        }
+        };
+      case "activity": {
+        return {
+          items: Activities.find().fetch()
+        };
+      }
       default:
         return {
           items: propsItems

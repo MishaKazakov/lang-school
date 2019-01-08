@@ -3,23 +3,22 @@ import { Link } from "react-router-dom";
 import { IEvent } from "../../../models/event";
 import { formatTime } from "../../../helpers/string";
 import { IAuditory } from "../../../models/auditory";
-import Button from "../Button";
 
 import { connect } from "react-redux";
 import { openModal } from "../../reducers/modalReducer";
 
 const Icon = require("antd/lib/icon");
-const Popover = require("antd/lib/popover");
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IProps {
   event: IEvent;
   auditories: IAuditory[];
+  itemId: string;
 }
 
 interface IDispatchFromProps {
-  openModal: (name: string, extra?: any) => void;
+  openModal: (name: string, extra?: any, itemId?: string) => void;
 }
 
 class Event extends React.Component<IProps & IDispatchFromProps> {
@@ -29,32 +28,11 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
     (endTime[0] - startTime[0]) * 60 + endTime[1] - startTime[1];
 
   onEditClick = () => {
-    const { openModal, event } = this.props;
-    openModal("group-element", event._id);
+    const { openModal, event, itemId } = this.props;
+    openModal("element-group", event._id, itemId);
   };
 
   onDeleteClick = () => "";
-
-  popoverContent = (
-    <div className={cx("popover")}>
-      <Button
-        type={Button.TYPE.PRIMARY}
-        ghost
-        className={cx("popover__button")}
-        onClick={this.onEditClick}
-      >
-        Редактировать
-      </Button>
-      <Button
-        type={Button.TYPE.PRIMARY}
-        ghost
-        className={cx("popover__button")}
-        onClick={this.onDeleteClick}
-      >
-        Удалить
-      </Button>
-    </div>
-  );
 
   render() {
     const { event, auditories } = this.props;
@@ -65,9 +43,11 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
     const startTime = formatTime(event.timeStart);
     const endTime = formatTime(event.timeEnd);
 
-    const auditoryName =
+    const auditory =
       auditories &&
-      auditories.find(auditory => auditory._id === event.auditoryId).name;
+      auditories.find &&
+      auditories.find(auditory => auditory._id === event.auditoryId);
+    const auditoryName = auditory ? auditory.name : "";
 
     return (
       <div
@@ -75,19 +55,19 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
         style={{ top: startPosition, height: duration }}
       >
         <Link to="/attendance" className={cx("event")}>
-          <span className={cx("event__name")}>{event.name}</span>
+          <div className={cx("event__name-wrapper")}>
+            <span className={cx("event__name")}>{event.name}</span>
+          </div>
           <div className={cx("event__time")}>
             с {startTime} до {endTime}
           </div>
-          {duration > 45 && (
+          {duration > 50 && (
             <div className={cx("event__auditory")}>{auditoryName}</div>
           )}
         </Link>
-        <Popover content={this.popoverContent} placement="right">
-          <div className={cx("event__edit")}>
-            <Icon type="edit" className={cx("edit")} />
-          </div>
-        </Popover>
+        <button className={cx("event__edit")} onClick={this.onEditClick}>
+          <Icon type="edit" className={cx("edit")} />
+        </button>
       </div>
     );
   }

@@ -2,24 +2,27 @@ interface IAction {
   type: string;
   modalName: string;
   extra?: any;
+  groupId?: string;
 }
 
 export const modalReducer = (state = {}, action: IAction) => {
-  const { type, modalName, extra } = action;
+  const { type, modalName, extra, groupId } = action;
 
   switch (type) {
     case "OPEN_MODAL": {
       return {
         ...state,
         [modalName]: true,
-        extra
+        extra,
+        groupId
       };
     }
     case "CLOSE_MODAL": {
       return {
         ...state,
         [modalName]: false,
-        extra: null
+        extra: null,
+        groupId: null
       };
     }
     default:
@@ -27,11 +30,12 @@ export const modalReducer = (state = {}, action: IAction) => {
   }
 };
 
-export const openModal = dispatch => (modalName: string, extra) =>
+export const openModal = dispatch => (modalName: string, extra, groupId) =>
   dispatch({
     type: "OPEN_MODAL",
     modalName,
-    extra
+    extra,
+    groupId
   });
 
 export const closeModal = dispatch => (modalName: string) =>
