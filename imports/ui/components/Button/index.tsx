@@ -17,7 +17,8 @@ enum Type {
 
 enum Icon {
   EDIT = "edit",
-  ADD = "plus-circle"
+  ADD = "plus-circle",
+  REMOVE = "close-circle"
 }
 
 enum HtmlType {

@@ -7,3 +7,16 @@
 .student-table__edit {
   text-align: center;
 }
+
+.student-table__panel {
+  display: inline-block;
+  padding: 10px 0;
+}
+
+.student-table__search {
+  width: 200px;
+}
+
+.student-table__empty-search {
+  margin-right: 10px;
+}
