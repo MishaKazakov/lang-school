@@ -54,7 +54,7 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
         className={cx("event__wrapper")}
         style={{ top: startPosition, height: duration }}
       >
-        <Link to="/attendance" className={cx("event")}>
+        <Link to={`/attendance?id=${event._id}`} className={cx("event")}>
           <div className={cx("event__name-wrapper")}>
             <span className={cx("event__name")}>{event.name}</span>
           </div>
