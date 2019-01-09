@@ -6,6 +6,8 @@ export interface IEvent {
   name: string;
   date: Date | any;
   day?: number;
+  beginDate?: Date;
+  endDate?: Date;
   timeStart: number[];
   timeEnd: number[];
   dateCreated?: Date;

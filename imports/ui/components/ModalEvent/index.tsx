@@ -8,7 +8,11 @@ import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
 import { eventsToDisabledTimes, getEventsQuery } from "../../../helpers/events";
-import { formatMomentToDb } from "../../../helpers/time";
+import {
+  formatMomentToDb,
+  formatDbToMoment,
+  formatDbToDate
+} from "../../../helpers/time";
 
 import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
@@ -79,7 +83,9 @@ class ModalEvent extends React.Component<
           date: date,
           timeStart,
           timeEnd,
-          isInfinite
+          isInfinite,
+          beginDate: formatDbToDate(timeStart, date),
+          endDate: formatDbToDate(timeEnd, date)
         }
       );
       date.setDate(date.getDate() + 7);
@@ -98,7 +104,9 @@ class ModalEvent extends React.Component<
               date: nextDay,
               timeStart,
               timeEnd,
-              isInfinite
+              isInfinite,
+              beginDate: formatDbToDate(timeStart, date),
+              endDate: formatDbToDate(timeEnd, date)
             }
           );
         });
@@ -116,7 +124,9 @@ class ModalEvent extends React.Component<
           date: nextDay,
           timeStart,
           timeEnd,
-          isInfinite
+          isInfinite,
+          beginDate: formatDbToDate(timeStart, date),
+          endDate: formatDbToDate(timeEnd, date)
         });
       }
     }
@@ -136,12 +146,6 @@ class ModalEvent extends React.Component<
         {auditory.name}
       </Option>
     ));
-
-  getMomentTime = time =>
-    moment().set({
-      hours: time[0],
-      minutes: time[1]
-    });
 
   getDisabledMinutes = (hour: number) => {
     let minutes = [];
@@ -172,8 +176,8 @@ class ModalEvent extends React.Component<
 
     const auditoryItems = this.getAuditoryItems();
 
-    const beginTime = event && this.getMomentTime(event.timeStart);
-    const endTime = event && this.getMomentTime(event.timeEnd);
+    const beginTime = event && formatDbToMoment(event.timeStart);
+    const endTime = event && formatDbToMoment(event.timeEnd);
 
     const disabledHours = () => [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
 
