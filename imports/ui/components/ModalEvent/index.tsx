@@ -2,24 +2,26 @@ import * as React from "react";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { IAuditory } from "../../../models/auditory";
-import { IEvent } from "../../../models/event";
+import { IEvent, IEventForm } from "../../../models/event";
 import { IGroup } from "../../..//models/group";
 import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
 import { eventsToDisabledTimes, getEventsQuery } from "../../../helpers/events";
-import {
-  formatMomentToDb,
-  formatDbToMoment,
-  formatDbToDate
-} from "../../../helpers/time";
+import { formatDbToMoment } from "../../../helpers/time";
 
 import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
-import { Events } from "../../../api/events";
 import { Groups } from "../../../api/groups";
+import {
+  Events,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  deleteFutureEvents
+} from "../../../api/events";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -63,81 +65,39 @@ class ModalEvent extends React.Component<
 > {
   onClose = () => this.props.closeModal(name);
 
-  onSubmit = (data: IEvent) => {
+  onSubmit = (data: IEventForm) => {
     const { event, futureEvents } = this.props;
     const id = event && event._id;
     const group = this.props.group;
-    const timeStart = formatMomentToDb(data.timeStart);
-    const timeEnd = formatMomentToDb(data.timeEnd);
     const date: Date = data.date.toDate();
-    const isInfinite = !group.numberOfClasses;
 
     if (id) {
-      Events.update(
-        { _id: id },
-        {
-          name: group.name,
-          auditoryId: data.auditoryId,
-          teachersId: group.teacherId,
-          groupId: group._id,
-          date: date,
-          timeStart,
-          timeEnd,
-          isInfinite,
-          beginDate: formatDbToDate(timeStart, date),
-          endDate: formatDbToDate(timeEnd, date)
-        }
-      );
-      date.setDate(date.getDate() + 7);
-      data.forFuture &&
-        futureEvents.forEach((event, i) => {
-          const nextDay = new Date(date);
-          nextDay.setDate(nextDay.getDate() + 7 * i);
+      updateEvent({ data, group, date, event, referenceable: data.forFuture });
 
-          Events.update(
-            { _id: event._id },
-            {
-              name: group.name,
-              auditoryId: data.auditoryId,
-              teachersId: group.teacherId,
-              groupId: group._id,
-              date: nextDay,
-              timeStart,
-              timeEnd,
-              isInfinite,
-              beginDate: formatDbToDate(timeStart, date),
-              endDate: formatDbToDate(timeEnd, date)
-            }
-          );
+      date.setDate(date.getDate() + 7);
+      futureEvents &&
+        futureEvents.forEach((event, i) => {
+          const nextDate = new Date(date);
+          nextDate.setDate(nextDate.getDate() + 7 * i);
+          updateEvent({ data, group, date: nextDate, event });
         });
     } else {
       const numClasses = group.numberOfClasses || 10;
-      for (let i = 0; i < numClasses; i++) {
-        const nextDay = new Date(date);
-        nextDay.setDate(nextDay.getDate() + 7 * i);
+      createEvent({ data, group, date, referenceable: true });
 
-        Events.insert({
-          name: group.name,
-          auditoryId: data.auditoryId,
-          teachersId: group.teacherId,
-          groupId: group._id,
-          date: nextDay,
-          timeStart,
-          timeEnd,
-          isInfinite,
-          beginDate: formatDbToDate(timeStart, date),
-          endDate: formatDbToDate(timeEnd, date)
-        });
+      for (let i = 1; i < numClasses; i++) {
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 7 * i);
+        createEvent({ data, group, date: nextDate });
       }
     }
   };
 
   onDelete = () => {
-    const { event, futureEvents } = this.props;
-    const _id = event && event._id;
+    const { event } = this.props;
 
-    Events.remove({ _id });
-    futureEvents.forEach(event => Events.remove({ _id: event._id }));
+    deleteEvent(event);
+    deleteFutureEvents(event);
   };
 
   getAuditoryItems = () =>
@@ -283,6 +243,7 @@ export default compose(
     const group: any = Groups.findOne({ _id: modal.groupId });
     const date = queryDate.get() || (event && event.date);
     const eventsQuery = getEventsQuery({
+      _id,
       date,
       auditoryId: queryAuditoryId.get(),
       teacherId: group && group.teacherId

@@ -4,4 +4,6 @@ export interface IGroup {
   name: string;
   startDate: Date | any;
   numberOfClasses: number;
+  referentEvents: string[];
+  isInfinite?: boolean;
 }

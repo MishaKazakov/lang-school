@@ -57,6 +57,7 @@ class ModalGroup extends React.Component<
   onSubmit = (data: IGroup) => {
     const { group } = this.props;
     const id = group && group._id;
+    const isInfinite = !data.numberOfClasses;
 
     if (id) {
       Groups.update(
@@ -65,7 +66,8 @@ class ModalGroup extends React.Component<
           name: data.name,
           teacherId: data.teacherId,
           startDate: data.startDate.toDate(),
-          numberOfClasses: data.numberOfClasses
+          numberOfClasses: data.numberOfClasses,
+          isInfinite
         }
       );
     } else {
@@ -73,7 +75,8 @@ class ModalGroup extends React.Component<
         name: data.name,
         teacherId: data.teacherId,
         startDate: data.startDate.toDate(),
-        numberOfClasses: data.numberOfClasses
+        numberOfClasses: data.numberOfClasses,
+        isInfinite
       });
     }
   };
