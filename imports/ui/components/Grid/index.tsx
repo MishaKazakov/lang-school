@@ -83,6 +83,7 @@ export default withTracker<IDataProps, IProps>(({ date: monday, itemId }) => {
         $lte: sunday,
         $gte: monday
       },
+      visible: true,
       $or: [{ auditoryId: itemId }, { teachersId: itemId }, { groupId: itemId }]
     }).fetch(),
     auditories: Auditories.find().fetch()

@@ -24,7 +24,8 @@ function registerEvents() {
     beginDate: {
       $gt: beginDate,
       $lt: endDate
-    }
+    },
+    visible: true
   }).fetch();
 
   thisHourEvents &&

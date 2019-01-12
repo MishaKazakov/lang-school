@@ -136,7 +136,7 @@ class StudentTable extends React.Component<IProps> {
             key="group"
             render={this.renderGroup}
           />
-          <Column title="Изменить" render={this.renderEdit} width="86px" />
+          <Column title="Изменить" render={this.renderEdit} width="100px" />
         </Table>
       </>
     );

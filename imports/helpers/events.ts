@@ -61,7 +61,15 @@ export function getBeginningAndEndDay(date) {
   return { beginDate, endDate };
 }
 
-export function getEventsQuery({ date, auditoryId, teacherId }) {
+interface IEventQuery {
+  date: moment.Moment;
+  auditoryId: string;
+  teacherId: string;
+  _id?: string;
+}
+
+export function getEventsQuery(data: IEventQuery) {
+  const { date, auditoryId, teacherId, _id } = data;
   const { beginDate, endDate } = getBeginningAndEndDay(date);
   const teachersId = Array.isArray(teacherId) ? { $in: teacherId } : teacherId;
 
@@ -70,6 +78,7 @@ export function getEventsQuery({ date, auditoryId, teacherId }) {
       $gt: beginDate,
       $lt: endDate
     },
+    _id: { $ne: _id },
     $or: [{ auditoryId }, { teachersId: teachersId }]
   };
 }

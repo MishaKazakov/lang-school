@@ -2,8 +2,7 @@ import * as React from "react";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { IAuditory } from "../../../models/auditory";
-import { IEvent } from "../../../models/event";
-import { IGroup } from "../../../models/group";
+import { IEvent, IEventForm } from "../../../models/event";
 import { ITeacher } from "../../../models/teacher";
 import { IActivity } from "../../../models/activity";
 import ModalForm from "../ModalFrom";
@@ -64,13 +63,12 @@ class ModalActivityEvent extends React.Component<
 > {
   onClose = () => this.props.closeModal(name);
 
-  onSubmit = (data: IEvent) => {
+  onSubmit = (data: IEventForm) => {
     const { event, futureEvents, activity } = this.props;
     const id = event && event._id;
     const timeStart = formatMomentToDb(data.timeStart);
     const timeEnd = formatMomentToDb(data.timeEnd);
     const date: Date = data.date.toDate();
-    const isInfinite = activity.isInfinite;
 
     if (id) {
       Events.update(
@@ -82,8 +80,7 @@ class ModalActivityEvent extends React.Component<
           teachersId: data.teachersId,
           date: date,
           timeStart,
-          timeEnd,
-          isInfinite
+          timeEnd
         }
       );
       date.setDate(date.getDate() + 7);
@@ -101,8 +98,7 @@ class ModalActivityEvent extends React.Component<
               teachersId: data.teachersId,
               date: date,
               timeStart,
-              timeEnd,
-              isInfinite
+              timeEnd
             }
           );
         });
@@ -119,8 +115,7 @@ class ModalActivityEvent extends React.Component<
           teachersId: data.teachersId,
           date: date,
           timeStart,
-          timeEnd,
-          isInfinite
+          timeEnd
         });
       }
     }
