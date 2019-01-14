@@ -1,6 +1,7 @@
 import { Mongo } from "meteor/mongo";
 import { IEventForm, IEvent } from "../models/event";
 import { IGroup } from "../models/group";
+import { IActivity } from "../models/activity";
 import { formatMomentToDb } from "../helpers/time";
 import { setNewEventRef, updateEventRef } from "./groups";
 import * as moment from "moment";
@@ -10,14 +11,15 @@ export const Events = new Mongo.Collection("events");
 
 interface IEventOperations {
   data: IEventForm;
-  group: IGroup;
+  group: IGroup | IActivity;
   date?: Date;
   event?: IEvent;
   referenceable?: boolean;
 }
 
 export const createEvent = (eventData: IEventOperations) => {
-  const { data, group, date, referenceable } = eventData;
+  const { data, date, referenceable } = eventData;
+  const group = <IGroup>eventData.group;
   const timeStart = formatMomentToDb(data.timeStart);
   const timeEnd = formatMomentToDb(data.timeEnd);
   const createRef = referenceable
@@ -28,7 +30,7 @@ export const createEvent = (eventData: IEventOperations) => {
     {
       name: group.name,
       auditoryId: data.auditoryId,
-      teachersId: group.teacherId,
+      teachersId: group.teacherId || data.teachersId,
       groupId: group._id,
       date,
       timeStart,
@@ -44,7 +46,8 @@ export const createEvent = (eventData: IEventOperations) => {
 };
 
 export const updateEvent = (eventData: IEventOperations) => {
-  const { data, group, date, event, referenceable } = eventData;
+  const { data, date, event, referenceable } = eventData;
+  const group = <IGroup>eventData.group;
   const timeStart = formatMomentToDb(data.timeStart);
   const timeEnd = formatMomentToDb(data.timeEnd);
   const createRef = referenceable
@@ -56,7 +59,7 @@ export const updateEvent = (eventData: IEventOperations) => {
     {
       name: group.name,
       auditoryId: data.auditoryId,
-      teachersId: group.teacherId,
+      teachersId: group.teacherId || data.teachersId,
       groupId: group._id,
       date,
       timeStart,

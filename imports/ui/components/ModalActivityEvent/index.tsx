@@ -9,15 +9,21 @@ import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
 import { eventsToDisabledTimes, getEventsQuery } from "../../../helpers/events";
-import { formatMomentToDb } from "../../../helpers/time";
+import { formatDbToMoment } from "../../../helpers/time";
 
 import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
-import { Events } from "../../../api/events";
 import { Activities } from "../../../api/activities";
 import { Teachers } from "../../../api/teachers";
+import {
+  Events,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  deleteFutureEvents
+} from "../../../api/events";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -66,62 +72,51 @@ class ModalActivityEvent extends React.Component<
   onSubmit = (data: IEventForm) => {
     const { event, futureEvents, activity } = this.props;
     const id = event && event._id;
-    const timeStart = formatMomentToDb(data.timeStart);
-    const timeEnd = formatMomentToDb(data.timeEnd);
     const date: Date = data.date.toDate();
+    const isInfinite = data.forFuture;
 
     if (id) {
-      Events.update(
-        { _id: id },
-        {
-          groupId: activity._id,
-          name: activity.name,
-          auditoryId: data.auditoryId,
-          teachersId: data.teachersId,
-          date: date,
-          timeStart,
-          timeEnd
-        }
-      );
+      updateEvent({
+        data,
+        group: activity,
+        date,
+        event,
+        referenceable: isInfinite
+      });
+
       date.setDate(date.getDate() + 7);
-      data.forFuture &&
+      isInfinite &&
         futureEvents.forEach((event, i) => {
           const nextDay = new Date(date);
           nextDay.setDate(nextDay.getDate() + 7 * i);
 
-          Events.update(
-            { _id: event._id },
-            {
-              groupId: activity._id,
-              name: activity.name,
-              auditoryId: data.auditoryId,
-              teachersId: data.teachersId,
-              date: date,
-              timeStart,
-              timeEnd
-            }
-          );
+          updateEvent({ data, group: activity, date: nextDay, event });
         });
     } else {
-      const numClasses = activity.numberOfClasses || 1;
-      for (let i = 0; i < numClasses; i++) {
+      let numClasses = 1;
+      if (activity.numberOfClasses) {
+        numClasses = activity.numberOfClasses;
+      }
+      if (isInfinite) {
+        numClasses = 10;
+      }
+      createEvent({ data, group: activity, date, referenceable: true });
+
+      for (let i = 1; i < numClasses; i++) {
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 7 * i);
 
-        Events.insert({
-          groupId: activity._id,
-          name: activity.name,
-          auditoryId: data.auditoryId,
-          teachersId: data.teachersId,
-          date: date,
-          timeStart,
-          timeEnd
-        });
+        createEvent({ data, group: activity, date: nextDay });
       }
     }
   };
 
-  onDelete = () => Events.remove({ _id: this.props.event._id });
+  onDelete = () => {
+    const { event } = this.props;
+
+    deleteEvent(event);
+    deleteFutureEvents(event);
+  };
 
   getSelectItems = items =>
     items.map(item => (
@@ -129,12 +124,6 @@ class ModalActivityEvent extends React.Component<
         {item.name ? item.name : `${item.lastName} ${item.firstName}`}
       </Option>
     ));
-
-  getMomentTime = time =>
-    moment().set({
-      hours: time[0],
-      minutes: time[1]
-    });
 
   getDisabledMinutes = (hour: number) => {
     let minutes = [];
@@ -180,8 +169,8 @@ class ModalActivityEvent extends React.Component<
     const auditoryItems = this.getSelectItems(auditories);
     const teacherItems = this.getSelectItems(teachers);
 
-    const beginTime = event && this.getMomentTime(event.timeStart);
-    const endTime = event && this.getMomentTime(event.timeEnd);
+    const beginTime = event && event && formatDbToMoment(event.timeStart);
+    const endTime = event && event && formatDbToMoment(event.timeEnd);
 
     const disabledHours = () => [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
 

@@ -3,4 +3,5 @@ export interface IActivity {
   name: string;
   numberOfClasses: number;
   isInfinite?: boolean;
+  referentEvents: string[];
 }
