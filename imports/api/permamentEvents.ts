@@ -3,6 +3,7 @@ import { Events, cloneEventForThisWeek, areEventsEqual } from "./events";
 import { IGroup } from "../models/group";
 import { IEvent } from "../models/event";
 import { Groups } from "./groups";
+import { Activities } from "./activities";
 import * as moment from "moment";
 
 const WEEK = 604800000;
@@ -12,12 +13,16 @@ export const startPermanentEventObserver = () =>
 
 const permanentEventObserver = () => {
   const groups: IGroup[] = <IGroup[]>Groups.find({ isInfinite: true }).fetch();
+  const activities = <IGroup[]>Activities.find({ isInfinite: true }).fetch();
+  groups.concat(activities);
   const monday = moment().startOf("week");
   const sunday = monday.clone().day(7);
 
   groups &&
     groups.forEach(group => {
-      if (!group.referentEvents || group.referentEvents.length === 0) return;
+      const refEventNum = group.referentEvents.length;
+
+      if (!group.referentEvents || refEventNum === 0) return;
 
       const events: IEvent[] = <IEvent[]>Events.find({
         date: {
@@ -27,11 +32,11 @@ const permanentEventObserver = () => {
         groupId: group._id
       }).fetch();
 
-      if (events.length === group.referentEvents.length) {
+      if (events.length === refEventNum) {
         return;
       }
 
-      if (events.length != group.referentEvents.length) {
+      if (events.length != refEventNum) {
         if (events.length === 0) {
           addAllEvents(group.referentEvents);
         } else {

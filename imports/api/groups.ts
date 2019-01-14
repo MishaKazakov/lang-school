@@ -1,11 +1,16 @@
 import { Mongo } from "meteor/mongo";
 import { IGroup } from "../models/group";
+import { IActivity } from "../models/activity";
 import { IEvent } from "../models/event";
 import { Events, areEventsEqual } from "./events";
+import { Activities } from "./activities";
 
 export const Groups = new Mongo.Collection("groups");
 
-export const setNewEventRef = (eventGroup: IGroup, eventId: string) => {
+export const setNewEventRef = (
+  eventGroup: IGroup | IActivity,
+  eventId: string
+) => {
   const group = { ...eventGroup };
 
   if (!group.referentEvents) {
@@ -13,11 +18,15 @@ export const setNewEventRef = (eventGroup: IGroup, eventId: string) => {
   }
 
   group.referentEvents.push(eventId);
-  Groups.update({ _id: group._id }, { ...group });
+  if ((<IGroup>eventGroup).startDate) {
+    Groups.update({ _id: group._id }, { ...group });
+  } else {
+    Activities.update({ _id: group._id }, { ...group });
+  }
 };
 
 export const updateEventRef = (
-  eventGroup: IGroup,
+  eventGroup: IGroup | IActivity,
   prevEvent: IEvent,
   nextEventId
 ) => {
@@ -35,5 +44,10 @@ export const updateEventRef = (
 
   const oldRefIndex = group.referentEvents.indexOf(oldRefId);
   group.referentEvents.splice(oldRefIndex, 1, nextEventId);
-  Groups.update({ _id: group._id }, { ...group });
+
+  if ((<IGroup>eventGroup).startDate) {
+    Groups.update({ _id: group._id }, { ...group });
+  } else {
+    Activities.update({ _id: group._id }, { ...group });
+  }
 };

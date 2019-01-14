@@ -66,9 +66,8 @@ class ModalEvent extends React.Component<
   onClose = () => this.props.closeModal(name);
 
   onSubmit = (data: IEventForm) => {
-    const { event, futureEvents } = this.props;
+    const { event, futureEvents, group } = this.props;
     const id = event && event._id;
-    const group = this.props.group;
     const date: Date = data.date.toDate();
 
     if (id) {
