@@ -1,0 +1,17 @@
+.group-data {
+  & + & {
+    margin-top: 10px;
+  }
+}
+.group-data__title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.group-data__field {
+  padding-left: 10px;
+}
+
+.group-data__value {
+  margin-left: 5px;
+}

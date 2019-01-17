@@ -7,6 +7,7 @@ import * as qs from "query-string";
 import { Location, History } from "history";
 import { withRouter, match } from "react-router";
 import { compose } from "redux";
+import ModelStudentStatistic from "../ModelStudentStatistic";
 
 import { Students } from "../../../api/students";
 import { Groups } from "../../../api/groups";
@@ -14,6 +15,7 @@ import { Groups } from "../../../api/groups";
 import { withTracker } from "meteor/react-meteor-data";
 
 const Search = require("antd/lib/input").Search;
+const Icon = require("antd/lib/icon");
 const Table = require("antd/lib/table");
 const { Column } = Table;
 
@@ -29,7 +31,21 @@ interface IProps {
   groups?: IGroup[];
 }
 
-class StudentTable extends React.Component<IProps> {
+interface IState {
+  visibleStatistic: boolean;
+  studentId: string;
+}
+
+class StudentTable extends React.Component<IProps, IState> {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      studentId: null,
+      visibleStatistic: null
+    };
+  }
+
   renderLink = (text: string, record: IStudent) => (
     <Link to={`/student-table/${record._id}`}>{text}</Link>
   );
@@ -44,6 +60,28 @@ class StudentTable extends React.Component<IProps> {
 
     return <Link to={`/student-table/${record._id}`}>{groups.join(", ")}</Link>;
   };
+
+  renderStatistic = (text: string, record: IStudent) => {
+    const handleClick = () => {
+      this.setState({
+        visibleStatistic: true,
+        studentId: record._id
+      });
+    };
+
+    return (
+      <div className={cx("student-table__edit")}>
+        <Icon
+          type="line-chart"
+          className={cx("student-table__icon")}
+          onClick={handleClick}
+        />
+      </div>
+    );
+  };
+
+  closeStatistic = () =>
+    this.setState({ visibleStatistic: false, studentId: null });
 
   renderEdit = (text: string, record: IStudent) => {
     const handleClick = () => this.props.edit(record._id);
@@ -87,6 +125,7 @@ class StudentTable extends React.Component<IProps> {
 
   render() {
     const { students, total, location } = this.props;
+    const { visibleStatistic, studentId } = this.state;
     const currentPage = +qs.parse(location.search)["pagination"] || 1;
     const pagination = {
       current: currentPage,
@@ -96,6 +135,11 @@ class StudentTable extends React.Component<IProps> {
 
     return (
       <>
+        <ModelStudentStatistic
+          visible={visibleStatistic}
+          id={studentId}
+          onClose={this.closeStatistic}
+        />
         <div className={cx("student-table__panel")}>
           <Search
             placeholder="Введите имя"
@@ -135,6 +179,11 @@ class StudentTable extends React.Component<IProps> {
             dataIndex="group"
             key="group"
             render={this.renderGroup}
+          />
+          <Column
+            title="Статистика"
+            render={this.renderStatistic}
+            width="110px"
           />
           <Column title="Изменить" render={this.renderEdit} width="100px" />
         </Table>

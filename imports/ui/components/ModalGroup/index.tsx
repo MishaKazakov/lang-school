@@ -97,20 +97,19 @@ class ModalGroup extends React.Component<
   render() {
     const { form, modal, group, teachers } = this.props;
     const { getFieldDecorator } = form;
+    
     const modalKind = modal.extra;
-    const title = modalKind ? "Редактирование" : "Создание";
     const isLoading = modalKind && !group;
     const teacherItems = this.getTeacherItems(teachers);
 
     return (
       <ModalForm
-        title={title}
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
         onDelete={this.onDelete}
-        showDelete={modalKind}
+        isEdit={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>

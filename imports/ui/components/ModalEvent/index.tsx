@@ -130,7 +130,6 @@ class ModalEvent extends React.Component<
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
-    const title = modalKind ? "Редактирование" : "Создание";
     const isLoading = modalKind && !event;
 
     const auditoryItems = this.getAuditoryItems();
@@ -142,14 +141,13 @@ class ModalEvent extends React.Component<
 
     return (
       <ModalForm
-        title={title}
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
         onDelete={this.onDelete}
         isLoading={isLoading}
-        showDelete={!!event}
+        isEdit={modalKind}
       >
         <div className={cx("from__item form__date")}>
           <FormItem label="Дата" hasFeedback>

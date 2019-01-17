@@ -74,18 +74,16 @@ class ModalAuditory extends React.Component<
     const { form, modal, auditory } = this.props;
     const { getFieldDecorator } = form;
     const modalKind = modal.extra;
-    const title = modalKind ? "Редактирование" : "Создание";
     const isLoading = modalKind && !auditory;
 
     return (
       <ModalForm
-        title={title}
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
         onDelete={this.onDelete}
-        showDelete={modalKind}
+        isEdit={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>

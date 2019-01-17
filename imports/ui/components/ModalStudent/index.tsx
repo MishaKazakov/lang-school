@@ -184,7 +184,6 @@ class ModalStudent extends React.Component<
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
-    const title = modalKind ? "Редактирование" : "Создание";
     const isLoading = modalKind && !student;
 
     const groupItems = this.getSelectOptions(groups);
@@ -192,13 +191,12 @@ class ModalStudent extends React.Component<
 
     return (
       <ModalForm
-        title={title}
         visible={modal[name]}
         form={form}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
         onDelete={this.onDelete}
-        showDelete={modalKind}
+        isEdit={modalKind}
         isLoading={isLoading}
       >
         <div className={cx("from__item")}>
