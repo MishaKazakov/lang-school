@@ -5,12 +5,14 @@ export interface IStudent {
   secondName?: string;
   phone?: string;
   group: {
-    [groupId: string]: {
-      _id: string;
-      numberLessons: number;
-      attended: string[];
-      miss: string[];
-      canceled: string[];
-    };
+    [groupId: string]: IStudentGroup;
   };
+}
+
+export interface IStudentGroup {
+  _id: string;
+  numberLessons: number;
+  attended: string[];
+  miss: string[];
+  canceled: string[];
 }

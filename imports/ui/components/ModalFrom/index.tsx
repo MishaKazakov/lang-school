@@ -9,14 +9,13 @@ const Form = require("antd/lib/form");
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
 interface IProps {
-  title: string;
+  isEdit: boolean;
   form: any;
   visible: boolean;
   isLoading: boolean;
   onClose: () => void;
   onDelete: () => void;
   onSubmit: (data) => void;
-  showDelete?: boolean;
 }
 
 interface IState {
@@ -57,16 +56,16 @@ class ModalForm extends React.Component<IProps, IState> {
   };
 
   render() {
-    const { visible, children, title, isLoading, showDelete } = this.props;
+    const { visible, children, isEdit, isLoading } = this.props;
     const { isConfirmVisible } = this.state;
 
     return (
       <Modal
         visible={visible}
-        title={title}
+        title={isEdit ? "Редактирование" : "Создание"}
         onCancel={this.onClose}
         footer={[
-          showDelete && (
+          isEdit && (
             <Button
               key="delete"
               type={Button.TYPE.DANGER}
@@ -90,7 +89,7 @@ class ModalForm extends React.Component<IProps, IState> {
             type={Button.TYPE.PRIMARY}
             htmlType={Button.HTMLTYPE.SUBMIT}
           >
-            Сохранить
+            {isEdit ? "Сохранить" : "Создать"}
           </Button>
         ]}
       >
