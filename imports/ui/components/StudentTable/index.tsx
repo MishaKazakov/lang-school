@@ -34,15 +34,18 @@ interface IProps {
 interface IState {
   visibleStatistic: boolean;
   studentId: string;
+  search: string;
 }
 
 class StudentTable extends React.Component<IProps, IState> {
   constructor(props) {
     super(props);
 
+    const query = qs.parse(props.location.search).search;
     this.state = {
       studentId: null,
-      visibleStatistic: null
+      visibleStatistic: null,
+      search: query || ""
     };
   }
 
@@ -102,7 +105,15 @@ class StudentTable extends React.Component<IProps, IState> {
     this.updateQuery(newParams);
   };
 
-  onEmptySearch = () => this.onSearch("");
+  onEmptySearch = () => {
+    this.onSearch("");
+    this.setState({ search: "" });
+  };
+
+  changeSearch = e =>
+    this.setState({
+      search: e.target.value
+    });
 
   onTableChange = (pagination, filters, sorter) => {
     const params = {
@@ -125,7 +136,7 @@ class StudentTable extends React.Component<IProps, IState> {
 
   render() {
     const { students, total, location } = this.props;
-    const { visibleStatistic, studentId } = this.state;
+    const { visibleStatistic, studentId, search } = this.state;
     const currentPage = +qs.parse(location.search)["pagination"] || 1;
     const pagination = {
       current: currentPage,
@@ -144,6 +155,8 @@ class StudentTable extends React.Component<IProps, IState> {
           <Search
             placeholder="Введите имя"
             onSearch={this.onSearch}
+            onChange={this.changeSearch}
+            value={search}
             className={cx("student-table__search")}
           />
           <Button
