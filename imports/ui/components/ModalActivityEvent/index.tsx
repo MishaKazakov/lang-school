@@ -171,8 +171,6 @@ class ModalActivityEvent extends React.Component<
     const beginTime = event && event && formatDbToMoment(event.timeStart);
     const endTime = event && event && formatDbToMoment(event.timeEnd);
 
-    const disabledHours = () => [0, 1, 2, 3, 4, 5, 6, 7, 22, 23];
-
     return (
       <ModalForm
         visible={modal[name]}
@@ -228,7 +226,6 @@ class ModalActivityEvent extends React.Component<
               ]
             })(
               <TimePicker
-                disabledHours={disabledHours}
                 disabledMinutes={this.getDisabledMinutes}
                 hideDisabledOptions
                 popupClassName={cx("time-picker__popup")}
@@ -252,7 +249,6 @@ class ModalActivityEvent extends React.Component<
               ]
             })(
               <TimePicker
-                disabledHours={disabledHours}
                 disabledMinutes={this.getDisabledMinutes}
                 hideDisabledOptions
                 popupClassName={cx("time-picker__popup")}

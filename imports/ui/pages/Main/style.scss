@@ -2,10 +2,11 @@
   display: flex;
   flex-direction: row;
   width: 100vw;
-  padding-left: 20px;
+  margin-left: 20px;
 }
 
 .main__panel {
+  position: fixed;
   width: 215px;
   margin-right: 20px;
 }
