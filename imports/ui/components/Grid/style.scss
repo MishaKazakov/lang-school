@@ -1,25 +1,17 @@
 .grid {
   position: relative;
   padding-top: 1px;
-  margin-left: 50px;
-}
-
-.grid__row {
-  height: 60px;
-  border-bottom: 1px gray solid;
+  width: 100%;
 }
 
 .gird__columns-wrapper {
   display: flex;
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
+  height: 100%;
 }
 
 .gird__column {
-  position: relative;
   flex: 1;
-  height: 901px;
+  position: relative;
+  height: 100%;
   border-right: 1px gray solid;
 }

@@ -1,5 +1,4 @@
 import * as React from "react";
-import Weekdays from "../Weekdays";
 import TimeRuler from "../TimeRuler";
 import Grid from "../Grid";
 
@@ -15,7 +14,6 @@ class Schedule extends React.Component<IProps> {
     const { date, itemId } = this.props;
     return (
       <div className={cx("schedule")}>
-        <Weekdays className={cx("schedule__weekdays")} startDay={date} />
         <div className={cx("schedule__table")}>
           <TimeRuler />
           {itemId ? (

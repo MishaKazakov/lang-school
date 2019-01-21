@@ -7,6 +7,8 @@ import MenuModals from "../../components/MenuModals";
 import { Location, History } from "history";
 import { withRouter, match } from "react-router";
 import AddPanel from "../../components/AddPanel";
+import Weekdays from "../../components/Weekdays";
+
 import * as qs from "query-string";
 import * as moment from "moment";
 import { withTracker } from "meteor/react-meteor-data";
@@ -129,6 +131,8 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
         <MenuModals />
         <AddPanel title={title} hide={hideAdd} onClick={this.addElement} />
         <div className={cx("main")}>
+          <Weekdays startDay={date} />
+          <Schedule itemId={itemId} date={date} />
           <div className={cx("main__panel")}>
             <Calendar
               value={calendarDate}
@@ -144,7 +148,6 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
               className={cx("main__menu")}
             />
           </div>
-          <Schedule itemId={itemId} date={date} />
         </div>
       </Layout>
     );

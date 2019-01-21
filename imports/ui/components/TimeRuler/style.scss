@@ -1,6 +1,5 @@
 .time-ruler {
   display: flex;
-  float: left;
   flex-direction: column;
   width: 50px;
   border-bottom: 1px gray solid;
@@ -12,6 +11,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 50px;
   height: 60px;
   border: 1px gray solid;
   border-bottom: none;

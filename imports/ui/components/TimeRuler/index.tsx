@@ -6,7 +6,7 @@ class TimeRuler extends React.Component {
   createTimeRuler = () => {
     let time = [];
 
-    for (let i = 8; i < 23; i++) {
+    for (let i = 0; i < 24; i++) {
       const nextNum = i.toString().padStart(2, "0");
       time.push(nextNum + ":00");
     }

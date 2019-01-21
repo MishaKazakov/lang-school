@@ -3,6 +3,7 @@ import Event from "../Event";
 import { withTracker } from "meteor/react-meteor-data";
 import { IEvent } from "../../../models/event";
 import { IAuditory } from "../../../models/auditory";
+import GridRows from "../GridRows";
 
 import { Events } from "../../../api/events";
 import { Auditories } from "../../../api/auditories";
@@ -26,12 +27,18 @@ interface IProps {
 // и вставить
 // db.events.insert({name:"Английский", date: new Date(), timeStart: [12,0], timeEnd:[14,0], auditoryId: "wYAwfXSYeDMPgXv9w" })
 
-class Grid extends React.Component<IProps & IDataProps> {
+class Grid extends React.PureComponent<IProps & IDataProps> {
   prepareEvents = (events: IEvent[]) => {
     let schedule = new Array(7).fill(0);
     schedule.forEach((v, i) => (schedule[i] = new Array()));
+    let earliestHour = 25;
 
     events.forEach(e => {
+      const eventHour = e.timeStart[0];
+      if (eventHour < earliestHour) {
+        earliestHour = eventHour;
+      }
+
       if (e.date.getDay() === 0) {
         schedule[6].push(e);
       } else {
@@ -40,19 +47,25 @@ class Grid extends React.Component<IProps & IDataProps> {
       }
     });
 
-    return schedule;
+    return { schedule, earliestHour };
+  };
+
+  scrollPage = (hour: number) => {
+    if (hour === 25 || hour === 0) {
+      return;
+    }
+
+    document.querySelector(".schedule").scrollTo(0, 60 * (hour - 1) + 1);
   };
 
   render() {
     const { events, auditories, itemId } = this.props;
-    const times = Array.from({ length: 15 }, (v, i) => i + 1);
-    const schedule = this.prepareEvents(events);
+    const { schedule, earliestHour } = this.prepareEvents(events);
+    this.scrollPage(earliestHour);
 
     return (
       <div className={cx("grid")}>
-        {times.map(v => (
-          <div key={v} className={cx("grid__row")} />
-        ))}
+        {GridRows()}
         <div className={cx("gird__columns-wrapper")}>
           {schedule.map((day, i) => (
             <div key={i} className={cx("gird__column")}>

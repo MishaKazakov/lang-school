@@ -1,16 +1,15 @@
 .schedule {
-  flex: 1;
+  position: fixed;
+  width: calc(100% - 240px);
+  height: calc(100% - 150px);
+  margin-left: 220px;
+  overflow-y: scroll;
 }
 
 .schedule__table {
   position: relative;
-  height: 900px;
-  background-color: white;
-}
-
-.schedule__weekdays {
-  height: 50px;
-  margin-left: 49px;
+  display: flex;
+  margin-top: 50px;
   background-color: white;
 }
 

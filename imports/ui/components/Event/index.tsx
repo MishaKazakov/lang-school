@@ -22,7 +22,7 @@ interface IDispatchFromProps {
 }
 
 class Event extends React.Component<IProps & IDispatchFromProps> {
-  getPosition = (time: number[]) => (time[0] - 8) * 60 + time[1];
+  getPosition = (time: number[]) => time[0] * 60 + time[1];
 
   getDuration = (startTime: number[], endTime: number[]) =>
     (endTime[0] - startTime[0]) * 60 + endTime[1] - startTime[1];
