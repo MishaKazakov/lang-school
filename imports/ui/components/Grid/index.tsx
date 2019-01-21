@@ -55,7 +55,11 @@ class Grid extends React.PureComponent<IProps & IDataProps> {
       return;
     }
 
-    document.querySelector(".schedule").scrollTo(0, 60 * (hour - 1) + 1);
+    setTimeout(
+      () =>
+        document.querySelector(".schedule").scrollTo(0, 60 * (hour - 1) + 1),
+      0
+    );
   };
 
   render() {

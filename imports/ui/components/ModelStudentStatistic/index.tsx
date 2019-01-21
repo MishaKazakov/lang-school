@@ -24,7 +24,7 @@ class ModelStudentStatistic extends React.Component<IProps> {
     const title =
       student && `Статистика ${student.firstName} ${student.lastName}`;
     const statistic = student && this.getStatistic(student, groups);
-
+    
     return (
       <Modal
         title={title}
@@ -48,14 +48,24 @@ class ModelStudentStatistic extends React.Component<IProps> {
 
     for (const groupId in student.group) {
       const group = groups.find(group => group._id === groupId);
-      const groupData = this.getGroupsData(student.group[groupId], group.name);
-      statistic.push(groupData);
+      const groupData = student.group[groupId];
+      const groupElements = this.groupElements(groupData, group.name);
+
+      statistic.push(groupElements);
     }
+
+    student.archiveGroups &&
+      student.archiveGroups.forEach(groupData => {
+        const group = groups.find(group => group._id === groupData._id);
+        const groupElements = this.groupElements(groupData, group.name);
+
+        statistic.push(groupElements);
+      });
 
     return statistic;
   };
 
-  getGroupsData = (groupData: IStudentGroup, name: string) => {
+  groupElements = (groupData: IStudentGroup, name: string) => {
     const { _id, numberLessons, attended, miss, canceled } = groupData;
     const balance = numberLessons - attended.length - miss.length;
 
@@ -90,10 +100,15 @@ class ModelStudentStatistic extends React.Component<IProps> {
 export default withTracker<any, IProps>(({ id: _id }) => {
   const student: IStudent = Students.findOne({ _id }) as IStudent;
   const studentGroupIds = [];
+
   if (student) {
     for (const groupId in student.group) {
       studentGroupIds.push(groupId);
     }
+    student.archiveGroups &&
+      student.archiveGroups.forEach(group => {
+        studentGroupIds.push(group._id);
+      });
   }
 
   return {
