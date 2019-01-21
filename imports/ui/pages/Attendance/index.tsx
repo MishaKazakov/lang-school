@@ -27,12 +27,12 @@ interface IProps {
 
 class Attendance extends React.Component<IProps> {
   mapGroup = (students: IStudent[], event) => {
-    const group = [];
+    const missed = [];
     const attended = [];
     const canceled = [];
 
     if (!event || !students) {
-      return { group, attended, canceled };
+      return { missed, attended, canceled };
     }
 
     const groupId: string = event.groupId;
@@ -43,46 +43,83 @@ class Attendance extends React.Component<IProps> {
       if (!studentGroup) {
         return;
       }
-      if (studentGroup.attended.includes(eventId)) {
-        attended.push(student);
+      if (studentGroup.miss.includes(eventId)) {
+        missed.push(student);
       } else if (studentGroup.canceled.includes(eventId)) {
         canceled.push(student);
       } else {
-        group.push(student);
+        attended.push(student);
       }
     });
 
-    return { group, attended, canceled };
+    missed.sort(this.sortStudent);
+    attended.sort(this.sortStudent);
+    canceled.sort(this.sortStudent);
+
+    return { missed, attended, canceled };
   };
 
-  onClick = e => {
-    const id = e.target.dataset.id;
-    this.changeStudentStatus(id);
-    this.forceUpdate();
+  sortStudent = (a: IStudent, b: IStudent) => {
+    if (a.firstName > b.firstName) return 1;
+    if (a.firstName < b.firstName) return -1;
   };
 
-  changeStudentStatus = (id: string) => {
+  onRightCLick = (id: string) => {
     const { event, students } = this.props;
     let student = students.find(student => student._id === id);
     const groupId = event.groupId;
     const group = student.group[groupId];
     const eventId = event._id;
 
-    if (group.attended.includes(eventId)) {
-      group.attended = group.attended.filter(id => id != eventId);
-      group.canceled.push(eventId);
+    if (group.miss.includes(eventId)) {
+      group.miss = group.miss.filter(id => id != eventId);
+      group.attended.push(eventId);
       this.updateStudent(student, groupId, group);
+      this.forceUpdate();
       return;
     }
 
     if (group.canceled.includes(eventId)) {
       group.canceled = group.canceled.filter(id => id != eventId);
+      group.miss.push(eventId);
       this.updateStudent(student, groupId, group);
+      this.forceUpdate();
       return;
     }
 
-    group.attended.push(eventId);
+    group.attended = group.attended.filter(id => id != eventId);
+    group.canceled.push(eventId);
     this.updateStudent(student, groupId, group);
+    this.forceUpdate();
+  };
+
+  onLeftClick = (id: string) => {
+    const { event, students } = this.props;
+    let student = students.find(student => student._id === id);
+    const groupId = event.groupId;
+    const group = student.group[groupId];
+    const eventId = event._id;
+
+    if (group.miss.includes(eventId)) {
+      group.miss = group.miss.filter(id => id != eventId);
+      group.canceled.push(eventId);
+      this.updateStudent(student, groupId, group);
+      this.forceUpdate();
+      return;
+    }
+
+    if (group.canceled.includes(eventId)) {
+      group.canceled = group.canceled.filter(id => id != eventId);
+      group.attended.push(eventId);
+      this.updateStudent(student, groupId, group);
+      this.forceUpdate();
+      return;
+    }
+
+    group.attended = group.attended.filter(id => id != eventId);
+    group.miss.push(eventId);
+    this.updateStudent(student, groupId, group);
+    this.forceUpdate();
   };
 
   updateStudent = (student: IStudent, groupId, group) => {
@@ -92,7 +129,7 @@ class Attendance extends React.Component<IProps> {
 
   render() {
     const { students, event } = this.props;
-    const { group, attended, canceled } = this.mapGroup(students, event);
+    const { missed, attended, canceled } = this.mapGroup(students, event);
     const time = event && formatTime(event.timeStart);
     const day = event && event.date;
     const dayTittle =
@@ -110,17 +147,20 @@ class Attendance extends React.Component<IProps> {
             <div className={cx("attendance__day")}>Время: {time}</div>
             <div className={cx("attendance__groups")}>
               <StudentGroup
-                onClick={this.onClick}
-                title="Студенты в группе"
-                students={group}
+                onLeftClick={this.onLeftClick}
+                onRightClick={this.onRightCLick}
+                title="Не пришли"
+                students={missed}
               />
               <StudentGroup
-                onClick={this.onClick}
+                onLeftClick={this.onLeftClick}
+                onRightClick={this.onRightCLick}
                 title="Пришли"
                 students={attended}
               />
               <StudentGroup
-                onClick={this.onClick}
+                onLeftClick={this.onLeftClick}
+                onRightClick={this.onRightCLick}
                 title="Отменили"
                 students={canceled}
               />
