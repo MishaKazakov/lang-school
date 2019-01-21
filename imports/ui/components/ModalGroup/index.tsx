@@ -58,6 +58,8 @@ class ModalGroup extends React.Component<
     const { group } = this.props;
     const id = group && group._id;
     const isInfinite = !data.numberOfClasses;
+    const userId = (Teachers.findOne(data.teacherId) as { userId: string })
+      .userId;
 
     if (id) {
       Groups.update(
@@ -65,6 +67,7 @@ class ModalGroup extends React.Component<
         {
           name: data.name,
           teacherId: data.teacherId,
+          userId: userId,
           startDate: data.startDate.toDate(),
           numberOfClasses: data.numberOfClasses,
           isInfinite
@@ -74,6 +77,7 @@ class ModalGroup extends React.Component<
       Groups.insert({
         name: data.name,
         teacherId: data.teacherId,
+        userId: userId,
         startDate: data.startDate.toDate(),
         numberOfClasses: data.numberOfClasses,
         isInfinite
@@ -97,7 +101,7 @@ class ModalGroup extends React.Component<
   render() {
     const { form, modal, group, teachers } = this.props;
     const { getFieldDecorator } = form;
-    
+
     const modalKind = modal.extra;
     const isLoading = modalKind && !group;
     const teacherItems = this.getTeacherItems(teachers);

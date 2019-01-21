@@ -13,6 +13,7 @@ moment.locale("ru");
 import Main from "../ui/pages/Main";
 import Students from "../ui/pages/Students";
 import Attendance from "../ui/pages/Attendance";
+import LogInPage from "../ui/pages/LogInPage";
 
 import reducer from "../ui/reducers/reducer";
 
@@ -31,6 +32,7 @@ export const renderRoutes = () => (
           />
           <Route exact path="/students" component={Students} />
           <Route exact path="/attendance" component={Attendance} />
+          <Route exact path="/login" component={LogInPage} />
         </Switch>
       </Router>
     </LocaleProvider>

@@ -220,7 +220,7 @@ class ModalEvent extends React.Component<
     const endTime = event && formatDbToMoment(event.timeEnd);
 
     const dateFields = this.getDatesFields(dateList);
-    console.log(this.props.events);
+    
     return (
       <ModalForm
         visible={modal[name]}

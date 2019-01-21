@@ -3,7 +3,7 @@ import * as InputMask from "react-input-mask/dist/react-input-mask.min";
 import { connect } from "react-redux";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
-import { ITeacher } from "../../../models/teacher";
+import { ITeacher, ITeacherForm } from "../../../models/teacher";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
@@ -12,10 +12,12 @@ import { Teachers } from "../../../api/teachers";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
+import { Meteor } from "meteor/meteor";
 
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Input = require("antd/lib/input");
+const message = require("antd/lib/message");
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -40,33 +42,56 @@ const name = "teacher";
 class ModalTeacher extends React.Component<
   IStateToProps & IDispatchFromProps & FormProps & IProps
 > {
+  constructor(props) {
+    super(props);
+
+    this.state = { email: "" };
+  }
+
   onClose = () => {
     this.setState({
-      teacher: null
+      teacher: null,
+      email: null
     });
     this.props.closeModal(name);
   };
 
-  onSubmit = (data: ITeacher) => {
+  componentDidMount() {
+    const teacher = this.props.teacher;
+    teacher &&
+      teacher.userId &&
+      Meteor.call("getUserEmail", teacher.userId, (error, result) => {
+        console.log(result);
+        if (!error) this.setState({ email: result });
+      });
+  }
+
+  onSubmit = (data: ITeacherForm) => {
     const { teacher } = this.props;
     const id = teacher && teacher._id;
 
     if (id) {
-      Teachers.update(
-        { _id: id },
-        {
-          firstName: data.firstName,
-          secondName: data.secondName,
-          lastName: data.lastName,
-          phone: data.phone
+      Meteor.call("updateTeacher", data, (error, data: string) => {
+        if (error) {
+          console.log(error);
+          message.error(
+            "Ошибка, пользователь с таким email адресом уже существует"
+          );
         }
-      );
+      });
     } else {
-      Teachers.insert({
-        firstName: data.firstName,
-        secondName: data.secondName,
-        lastName: data.lastName,
-        phone: data.phone
+      Meteor.call("createTeacher", data, (error, data) => {
+        if (error) {
+          console.log(error);
+          message.error(
+            "Ошибка, пользователь с таким email адресом уже существует"
+          );
+        } else {
+          message.success(
+            "Пользователь успешно создан, стандартный пароль : " + data,
+            5
+          );
+        }
       });
     }
   };
@@ -78,6 +103,14 @@ class ModalTeacher extends React.Component<
     const { getFieldDecorator } = form;
     const modalKind = modal.extra;
     const isLoading = modalKind && !teacher;
+    const email = (this.state as { email: string }).email;
+
+    teacher &&
+      teacher.userId &&
+      !email &&
+      Meteor.call("getUserEmail", teacher.userId, (error, result) => {
+        if (!error) this.setState({ email: result });
+      });
 
     return (
       <ModalForm
@@ -133,7 +166,7 @@ class ModalTeacher extends React.Component<
             })(<Input />)}
           </FormItem>
         </div>
-        <div className={cx("from__item form__item_last-elem")}>
+        <div className={cx("from__item")}>
           <FormItem label="Номер телефона" hasFeedback>
             {getFieldDecorator("phone", {
               initialValue: teacher ? teacher.phone : "",
@@ -146,6 +179,21 @@ class ModalTeacher extends React.Component<
                 }
               ]
             })(<InputMask className="ant-input" mask="+79999999999" />)}
+          </FormItem>
+        </div>
+        <div className={cx("from__item form__item_last-elem")}>
+          <FormItem label="email" hasFeedback>
+            {getFieldDecorator("email", {
+              initialValue: email,
+              validateTrigger: ["onBlur", "onChange"],
+              rules: [
+                { required: true, message: "Введите  email" },
+                {
+                  pattern: /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+                  message: "Введите email полностью"
+                }
+              ]
+            })(<Input type="email" />)}
           </FormItem>
         </div>
       </ModalForm>

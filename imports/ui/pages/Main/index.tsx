@@ -22,6 +22,7 @@ import { Groups } from "../../../api/groups";
 import { compose } from "redux";
 import { connect } from "react-redux";
 import { openModal } from "../../reducers/modalReducer";
+import { Meteor } from "meteor/meteor";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -30,6 +31,7 @@ interface IProps {
   history: History;
   match: match<{ id: string }>;
   item: any;
+  user: { _id: string; profile: { role: string } };
 }
 
 interface IDispatchFromProps {
@@ -41,6 +43,7 @@ interface IState {
   calendarDate: Date;
   category: string;
   itemId: string;
+  checkedForTeacher: boolean;
 }
 
 const categories = [
@@ -66,6 +69,8 @@ const categories = [
   }
 ];
 
+const adminOnlyCategories = ["teacher", "auditory"];
+
 class Main extends React.Component<IProps & IDispatchFromProps, IState> {
   constructor(props) {
     super(props);
@@ -77,7 +82,8 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
       date: this.getMonday(new Date()),
       calendarDate: new Date(),
       category: path || "group",
-      itemId: id
+      itemId: id,
+      checkedForTeacher: false
     };
   }
 
@@ -91,7 +97,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
   componentDidMount() {
     this.historyListener = this.props.history.listen(location => {
       const id = qs.parse(location.search)["id"];
-      this.setState({ itemId: id });
+      this.setState({ itemId: id, checkedForTeacher: false });
     });
   }
 
@@ -113,9 +119,31 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
     });
   };
 
+  checkForTeacher = (user: { _id: string; profile: { role: string } }) => {
+    if (this.props.location.pathname.substr(1) === "") {
+      if (user.profile.role === "teacher") {
+        const teacher = Teachers.findOne({ userId: user._id }) as {
+          _id: string;
+        };
+        this.setState({
+          category: "teacher",
+          itemId: teacher._id
+        });
+      }
+    }
+    this.setState({ checkedForTeacher: true });
+  };
+
   render() {
-    const { date, category, calendarDate, itemId } = this.state;
-    const { item } = this.props;
+    const {
+      date,
+      category,
+      calendarDate,
+      itemId,
+      checkedForTeacher
+    } = this.state;
+    const { item, user } = this.props;
+    user && !checkedForTeacher && this.checkForTeacher(user);
     const curCategory = categories.find(item => item.url === category);
     const categoryName = itemId ? curCategory.singleName : curCategory.name;
     const hideAdd = !itemId || !["group", "activity"].includes(category);
@@ -125,7 +153,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
         : `${item.lastName} ${item.firstName}`
       : "";
     const title = `${categoryName} ${itemTitle}`;
-
+    
     return (
       <Layout>
         <MenuModals />
@@ -143,7 +171,11 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
             />
             <Menu
               category={category}
-              categories={categories}
+              categories={categories.filter(
+                (c: { name: string; singleName: string; url: string }) =>
+                  !adminOnlyCategories.includes(c.url) ||
+                  (user && user.profile.role === "admin")
+              )}
               onChangeCategory={this.changeCategory}
               className={cx("main__menu")}
             />
@@ -173,7 +205,8 @@ export default compose(
     ];
 
     return {
-      item: items.find(item => !!item)
+      item: items.find(item => !!item),
+      user: Meteor.user()
     };
   })
 )(Main);
