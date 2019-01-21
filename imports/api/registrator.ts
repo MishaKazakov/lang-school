@@ -57,9 +57,10 @@ function checkEventAttendance(event: IEvent) {
 
     if (
       !group.attended.includes(eventId) &&
-      !group.canceled.includes(eventId)
+      !group.canceled.includes(eventId) &&
+      !group.miss.includes(eventId)
     ) {
-      group.miss.push(eventId);
+      group.attended.push(eventId);
       student.group[groupId] = group;
       Students.update({ _id: student._id }, { ...student });
     }
