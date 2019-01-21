@@ -62,9 +62,37 @@ function checkEventAttendance(event: IEvent) {
     ) {
       group.attended.push(eventId);
       student.group[groupId] = group;
-      Students.update({ _id: student._id }, { ...student });
+      Students.update(
+        { _id: student._id },
+        { ...student },
+        null,
+        checkStudentGroups
+      );
     }
   });
 
   delete events[event._id];
+}
+
+function checkStudentGroups(studentId: string) {
+  const student: IStudent = <IStudent>Students.findOne({ _id: studentId });
+
+  for (const groupId in student.group) {
+    const group = student.group[groupId];
+    const { numberLessons, attended, miss } = group;
+
+    if (numberLessons - attended.length - miss.length === 0) {
+      Students.update(
+        { _id: student._id },
+        {
+          $unset: {
+            [`group.${group._id}`]: ""
+          },
+          $push: {
+            archiveGroups: group
+          }
+        }
+      );
+    }
+  }
 }

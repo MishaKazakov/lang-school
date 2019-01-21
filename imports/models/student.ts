@@ -7,6 +7,7 @@ export interface IStudent {
   group: {
     [groupId: string]: IStudentGroup;
   };
+  archiveGroups?: IStudentGroup[];
 }
 
 export interface IStudentGroup {
