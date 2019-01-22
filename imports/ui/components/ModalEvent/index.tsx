@@ -125,6 +125,11 @@ class ModalEvent extends React.Component<
   onAuditoryChange = newAuditory => queryAuditoryId.set(newAuditory);
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
 
+  getAuditoryComment = (auditoryId: string) =>
+    this.props.auditories.find(
+      (auditory: IAuditory) => auditory._id === auditoryId
+    ).comment;
+
   render() {
     const { form, modal, event } = this.props;
     const { getFieldDecorator } = form;
@@ -133,6 +138,9 @@ class ModalEvent extends React.Component<
     const isLoading = modalKind && !event;
 
     const auditoryItems = this.getAuditoryItems();
+
+    const auditoryID = queryAuditoryId.get();
+    const auditoryComment = auditoryID && this.getAuditoryComment(auditoryID);
 
     const beginTime = event && formatDbToMoment(event.timeStart);
     const endTime = event && formatDbToMoment(event.timeEnd);
@@ -156,17 +164,27 @@ class ModalEvent extends React.Component<
             })(<DatePicker onChange={this.onDateChange} />)}
           </FormItem>
         </div>
-        <div className={cx("from__item")}>
+        <div
+          className={cx("from__item", { "form__no-margin": !!auditoryComment })}
+        >
           <FormItem label="Аудитория" hasFeedback>
             {getFieldDecorator("auditoryId", {
               initialValue: event ? event.auditoryId : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Выберите аудитрию" }]
             })(
-              <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
+              <>
+                <Select onChange={this.onAuditoryChange}>
+                  {auditoryItems}
+                </Select>
+                {auditoryComment && (
+                  <div className={cx("form__comment")}>{auditoryComment}</div>
+                )}
+              </>
             )}
           </FormItem>
         </div>
+
         <div className={cx("from__item")}>
           <FormItem label="Время начала" hasFeedback>
             {getFieldDecorator("timeStart", {
@@ -184,7 +202,9 @@ class ModalEvent extends React.Component<
             )}
           </FormItem>
         </div>
-        <div className={cx("from__item")}>
+        <div
+          className={cx("from__item", { "form__item_last-elem": !modalKind })}
+        >
           <FormItem label="Время окончания" hasFeedback>
             {getFieldDecorator("timeEnd", {
               initialValue: endTime,

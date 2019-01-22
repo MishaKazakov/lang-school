@@ -16,11 +16,11 @@
 
 .weekdays {
   display: flex;
-  width: calc(100% - 302px);
-  height: 50px;
-  margin-left: 269px;
-  background-color: rgb(230, 230, 230);
-  border-right: 1px gray solid;
+  position: absolute;
+  right: 0;
+  left: 289px;
+  background-color: #e6e6e6;
+  overflow-y: scroll;
   z-index: 2;
 }
 
@@ -33,4 +33,8 @@
   height: 50px;
   border: 1px gray solid;
   border-right: none;
+}
+
+.weekdays__scroll-placeholder {
+  overflow-y: scroll;
 }

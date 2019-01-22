@@ -158,6 +158,11 @@ class ModalActivityEvent extends React.Component<
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
   onTeacherChange = teachers => queryTeachersId.set(teachers);
 
+  getAuditoryComment = (auditoryId: string) =>
+    this.props.auditories.find(
+      (auditory: IAuditory) => auditory._id === auditoryId
+    ).comment;
+
   render() {
     const { form, modal, event, auditories, teachers } = this.props;
     const { getFieldDecorator } = form;
@@ -167,6 +172,9 @@ class ModalActivityEvent extends React.Component<
 
     const auditoryItems = this.getSelectItems(auditories);
     const teacherItems = this.getSelectItems(teachers);
+
+    const auditoryID = queryAuditoryId.get();
+    const auditoryComment = auditoryID && this.getAuditoryComment(auditoryID);
 
     const beginTime = event && event && formatDbToMoment(event.timeStart);
     const endTime = event && event && formatDbToMoment(event.timeEnd);
@@ -201,14 +209,23 @@ class ModalActivityEvent extends React.Component<
             )}
           </FormItem>
         </div>
-        <div className={cx("from__item")}>
+        <div
+          className={cx("from__item", { "form__no-margin": !!auditoryComment })}
+        >
           <FormItem label="Аудитория" hasFeedback>
             {getFieldDecorator("auditoryId", {
               initialValue: event ? event.auditoryId : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Выберите аудитрию" }]
             })(
-              <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
+              <>
+                <Select onChange={this.onAuditoryChange}>
+                  {auditoryItems}
+                </Select>
+                {auditoryComment && (
+                  <div className={cx("form__comment")}>{auditoryComment}</div>
+                )}
+              </>
             )}
           </FormItem>
         </div>
