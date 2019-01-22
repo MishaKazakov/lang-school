@@ -15,3 +15,13 @@ export const formatDbToDate = (time: any, date = new Date()) =>
       minutes: time[1]
     })
     .toDate();
+
+export const setToMidnight = (date: moment.Moment): Date =>
+  moment(date)
+    .set({
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0
+    })
+    .toDate();

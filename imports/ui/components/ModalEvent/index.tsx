@@ -8,7 +8,7 @@ import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
 import { eventsToDisabledTimes, getEventsQuery } from "../../../helpers/events";
-import { formatDbToMoment } from "../../../helpers/time";
+import { formatDbToMoment, setToMidnight } from "../../../helpers/time";
 
 import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
@@ -28,6 +28,7 @@ import { withTracker } from "meteor/react-meteor-data";
 
 import { FormComponentProps as FormProps } from "antd/lib/form";
 
+import Button from "../Button";
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Select = require("antd/lib/select");
@@ -35,6 +36,7 @@ const Option = Select.Option;
 const TimePicker = require("antd/lib/time-picker").default;
 const DatePicker = require("antd/lib/date-picker");
 const Checkbox = require("antd/lib/checkbox");
+const Icon = require("antd/lib/icon");
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -56,19 +58,41 @@ interface IProps {
 
 const name = "element-group";
 
-let queryDate = new ReactiveVar(null);
+let queryDate = new ReactiveVar([]);
 let queryAuditoryId = new ReactiveVar(null);
 let queryFutureEvents = new ReactiveVar(null);
 
+interface IState {
+  dateList: number[];
+}
+
 class ModalEvent extends React.Component<
-  IStateToProps & IDispatchFromProps & FormProps & IProps
+  IStateToProps & IDispatchFromProps & FormProps & IProps,
+  IState
 > {
-  onClose = () => this.props.closeModal(name);
+  constructor(props) {
+    super(props);
+
+    this.state = { dateList: [] };
+  }
+
+  onClose = () => {
+    this.props.closeModal(name);
+    this.closePreparations();
+  };
+
+  closePreparations = () => {
+    this.setState({ dateList: [] });
+    queryDate.set([]);
+    queryAuditoryId.set(null);
+    queryFutureEvents.set(null);
+  };
 
   onSubmit = (data: IEventForm) => {
     const { event, futureEvents, group } = this.props;
+    const { dateList } = this.state;
     const id = event && event._id;
-    const date: Date = data.date.toDate();
+    const date: Date = setToMidnight(data.date);
 
     if (id) {
       updateEvent({ data, group, date, event, referenceable: data.forFuture });
@@ -81,14 +105,22 @@ class ModalEvent extends React.Component<
           updateEvent({ data, group, date: nextDate, event });
         });
     } else {
-      const numClasses = group.numberOfClasses || 10;
-      createEvent({ data, group, date, referenceable: true });
+      this.createEvents(data, group, date);
+      dateList.forEach(dateNum => {
+        const newDate = setToMidnight(data[`date${dateNum}`]);
+        this.createEvents(data, group, newDate);
+      });
+    }
+  };
 
-      for (let i = 1; i < numClasses; i++) {
-        const nextDate = new Date(date);
-        nextDate.setDate(nextDate.getDate() + 7 * i);
-        createEvent({ data, group, date: nextDate });
-      }
+  createEvents = (data, group, date) => {
+    const numClasses = group.numberOfClasses || 10;
+    createEvent({ data, group, date, referenceable: true });
+
+    for (let i = 1; i < numClasses; i++) {
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 7 * i);
+      createEvent({ data, group, date: nextDate });
     }
   };
 
@@ -121,7 +153,48 @@ class ModalEvent extends React.Component<
     return minutes;
   };
 
-  onDateChange = newDate => queryDate.set(newDate.toDate());
+  addDateField = () => {
+    const dateListCopy: number[] = this.state.dateList.slice(0);
+    dateListCopy.push(dateListCopy.length + 1);
+    this.setState({ dateList: dateListCopy });
+  };
+
+  removeDateField = i =>
+    this.setState(prevState => ({
+      dateList: prevState.dateList.filter(date => date != i)
+    }));
+
+  getDatesFields = dateList =>
+    dateList.map(dateNum => this.getDateFormFields(dateNum));
+
+  getDateFormFields = dateNum => {
+    const { getFieldDecorator } = this.props.form;
+
+    return (
+      <div
+        className={cx("from__item form__date form__no-margin")}
+        key={dateNum}
+      >
+        <FormItem label="Дата" hasFeedback>
+          {getFieldDecorator(`date${dateNum}`, {
+            validateTrigger: ["onChange"],
+            rules: [{ required: true, message: "Выберете дату" }]
+          })(<DatePicker onChange={this.onDateChange} />)}
+        </FormItem>
+        <Icon
+          type="minus-circle-o"
+          className={cx("form__delete-item", "form__icon")}
+          onClick={() => this.removeDateField(dateNum)}
+        />
+      </div>
+    );
+  };
+
+  onDateChange = newDate => {
+    const prevDate = queryDate.get();
+    prevDate.push(newDate.toDate());
+    queryDate.set(prevDate);
+  };
   onAuditoryChange = newAuditory => queryAuditoryId.set(newAuditory);
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
 
@@ -132,6 +205,7 @@ class ModalEvent extends React.Component<
 
   render() {
     const { form, modal, event } = this.props;
+    const { dateList } = this.state;
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
@@ -145,6 +219,8 @@ class ModalEvent extends React.Component<
     const beginTime = event && formatDbToMoment(event.timeStart);
     const endTime = event && formatDbToMoment(event.timeEnd);
 
+    const dateFields = this.getDatesFields(dateList);
+    console.log(this.props.events);
     return (
       <ModalForm
         visible={modal[name]}
@@ -155,7 +231,11 @@ class ModalEvent extends React.Component<
         isLoading={isLoading}
         isEdit={modalKind}
       >
-        <div className={cx("from__item form__date")}>
+        <div
+          className={cx("from__item form__date", {
+            "form__no-margin": !modalKind
+          })}
+        >
           <FormItem label="Дата" hasFeedback>
             {getFieldDecorator("date", {
               initialValue: event ? moment(event.date) : null,
@@ -164,6 +244,14 @@ class ModalEvent extends React.Component<
             })(<DatePicker onChange={this.onDateChange} />)}
           </FormItem>
         </div>
+        {dateFields || ""}
+        {!modalKind && (
+          <div className={cx("form__button-add")}>
+            <Button onClick={this.addDateField}>
+              <Icon type="plus" /> Добавить дату
+            </Button>
+          </div>
+        )}
         <div
           className={cx("from__item", { "form__no-margin": !!auditoryComment })}
         >
@@ -173,16 +261,12 @@ class ModalEvent extends React.Component<
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Выберите аудитрию" }]
             })(
-              <>
-                <Select onChange={this.onAuditoryChange}>
-                  {auditoryItems}
-                </Select>
-                {auditoryComment && (
-                  <div className={cx("form__comment")}>{auditoryComment}</div>
-                )}
-              </>
+              <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
             )}
           </FormItem>
+          {auditoryComment && (
+            <div className={cx("form__comment")}>{auditoryComment}</div>
+          )}
         </div>
 
         <div className={cx("from__item")}>
@@ -255,21 +339,24 @@ export default compose(
     const event: any = _id && Events.findOne({ _id });
     const group: any = Groups.findOne({ _id: modal.groupId });
     const date = queryDate.get() || (event && event.date);
-    const eventsQuery = getEventsQuery({
-      _id,
-      date,
-      auditoryId: queryAuditoryId.get(),
-      teacherId: group && group.teacherId
-    });
+
     const isFutureEvents = queryFutureEvents.get();
     const futureEvents =
       isFutureEvents &&
       Events.find({ date: { $gt: date } }, { sort: { date: 1 } }).fetch();
+    const events = Events.find(
+      getEventsQuery({
+        _id,
+        date,
+        auditoryId: queryAuditoryId.get(),
+        teacherId: group && group.teacherId
+      })
+    ).fetch();
 
     return {
       event,
       auditories: Auditories.find().fetch(),
-      events: Events.find(eventsQuery).fetch(),
+      events,
       group,
       futureEvents
     };

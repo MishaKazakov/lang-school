@@ -1,5 +1,6 @@
 import { IEvent } from "../models/event";
 import * as moment from "moment";
+import { setToMidnight } from "./time";
 
 export function eventsToDisabledTimes(events: IEvent[]) {
   const times = {};
@@ -40,44 +41,26 @@ export function eventsToDisabledTimes(events: IEvent[]) {
   return times;
 }
 
-export function getBeginningAndEndDay(date) {
-  let beginDate, endDate;
-
-  if (date) {
-    beginDate = moment(date)
-      .set({
-        hour: 0,
-        minutes: 0
-      })
-      .toDate();
-
-    endDate = moment(date)
-      .set({
-        hours: 23,
-        minutes: 59
-      })
-      .toDate();
-  }
-  return { beginDate, endDate };
-}
-
 interface IEventQuery {
-  date: moment.Moment;
+  date: moment.Moment | moment.Moment[];
   auditoryId: string;
   teacherId: string;
   _id?: string;
 }
 
 export function getEventsQuery(data: IEventQuery) {
-  const { date, auditoryId, teacherId, _id } = data;
-  const { beginDate, endDate } = getBeginningAndEndDay(date);
+  const { date: dataDate, auditoryId, teacherId, _id } = data;
   const teachersId = Array.isArray(teacherId) ? { $in: teacherId } : teacherId;
+  let date;
+  if (Array.isArray(dataDate)) {
+    const dates = dataDate.map(newDate => setToMidnight(newDate));
+    date = { $in: dates };
+  } else {
+    date = setToMidnight(dataDate);
+  }
 
   return {
-    date: {
-      $gt: beginDate,
-      $lt: endDate
-    },
+    date,
     _id: { $ne: _id },
     $or: [{ auditoryId }, { teachersId: teachersId }]
   };

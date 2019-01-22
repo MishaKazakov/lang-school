@@ -164,7 +164,7 @@ class ModalStudent extends React.Component<
         </div>
         <Icon
           type="minus-circle-o"
-          className={cx("form__remove")}
+          className={cx("form__remove", "form__icon")}
           onClick={() => this.removeGroupField(groupId)}
         />
       </div>

@@ -9,7 +9,7 @@ import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
 import { eventsToDisabledTimes, getEventsQuery } from "../../../helpers/events";
-import { formatDbToMoment } from "../../../helpers/time";
+import { formatDbToMoment, setToMidnight } from "../../../helpers/time";
 
 import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
@@ -30,6 +30,7 @@ import { withTracker } from "meteor/react-meteor-data";
 
 import { FormComponentProps as FormProps } from "antd/lib/form";
 
+import Button from "../Button";
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Select = require("antd/lib/select");
@@ -37,6 +38,7 @@ const Option = Select.Option;
 const TimePicker = require("antd/lib/time-picker").default;
 const DatePicker = require("antd/lib/date-picker");
 const Checkbox = require("antd/lib/checkbox");
+const Icon = require("antd/lib/icon");
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -59,21 +61,44 @@ interface IProps {
 
 const name = "element-activity";
 
-let queryDate = new ReactiveVar(null);
+let queryDate = new ReactiveVar([]);
 let queryAuditoryId = new ReactiveVar(null);
 let queryTeachersId = new ReactiveVar(null);
 let queryFutureEvents = new ReactiveVar(null);
 
+interface IState {
+  dateList: number[];
+}
+
 class ModalActivityEvent extends React.Component<
-  IStateToProps & IDispatchFromProps & FormProps & IProps
+  IStateToProps & IDispatchFromProps & FormProps & IProps,
+  IState
 > {
-  onClose = () => this.props.closeModal(name);
+  constructor(props) {
+    super(props);
+
+    this.state = { dateList: [] };
+  }
+
+  onClose = () => {
+    this.props.closeModal(name);
+    this.closePreparations();
+  };
+
+  closePreparations = () => {
+    this.setState({ dateList: [] });
+    queryDate.set([]);
+    queryAuditoryId.set(null);
+    queryTeachersId.set(null);
+    queryFutureEvents.set(null);
+  };
 
   onSubmit = (data: IEventForm) => {
     const { event, futureEvents, activity } = this.props;
+    const { dateList } = this.state;
     const id = event && event._id;
-    const date: Date = data.date.toDate();
     const isInfinite = data.forFuture;
+    const date: Date = setToMidnight(data.date);
 
     if (id) {
       updateEvent({
@@ -100,14 +125,24 @@ class ModalActivityEvent extends React.Component<
       if (isInfinite) {
         numClasses = 10;
       }
-      createEvent({ data, group: activity, date, referenceable: true });
 
-      for (let i = 1; i < numClasses; i++) {
-        const nextDay = new Date(date);
-        nextDay.setDate(nextDay.getDate() + 7 * i);
+      this.createEvents(activity, numClasses, data, date);
+      dateList.forEach(dateNum => {
+        const newDate = setToMidnight(data[`date${dateNum}`]);
+        console.log("newDate", newDate);
+        this.createEvents(activity, numClasses, data, newDate);
+      });
+    }
+  };
 
-        createEvent({ data, group: activity, date: nextDay });
-      }
+  createEvents = (activity, numClasses, data, date) => {
+    createEvent({ data, group: activity, date, referenceable: true });
+
+    for (let i = 1; i < numClasses; i++) {
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 7 * i);
+
+      createEvent({ data, group: activity, date: nextDay });
     }
   };
 
@@ -153,7 +188,48 @@ class ModalActivityEvent extends React.Component<
     }
   };
 
-  onDateChange = newDate => queryDate.set(newDate.toDate());
+  addDateField = () => {
+    const dateListCopy: number[] = this.state.dateList.slice(0);
+    dateListCopy.push(dateListCopy.length + 1);
+    this.setState({ dateList: dateListCopy });
+  };
+
+  removeDateField = i =>
+    this.setState(prevState => ({
+      dateList: prevState.dateList.filter(date => date != i)
+    }));
+
+  getDatesFields = dateList =>
+    dateList.map(dateNum => this.getDateFormFields(dateNum));
+
+  getDateFormFields = dateNum => {
+    const { getFieldDecorator } = this.props.form;
+
+    return (
+      <div
+        className={cx("from__item form__date form__no-margin")}
+        key={dateNum}
+      >
+        <FormItem label="Дата" hasFeedback>
+          {getFieldDecorator(`date${dateNum}`, {
+            validateTrigger: ["onChange"],
+            rules: [{ required: true, message: "Выберете дату" }]
+          })(<DatePicker onChange={this.onDateChange} />)}
+        </FormItem>
+        <Icon
+          type="minus-circle-o"
+          className={cx("form__delete-item", "form__icon")}
+          onClick={() => this.removeDateField(dateNum)}
+        />
+      </div>
+    );
+  };
+
+  onDateChange = newDate => {
+    const prevDate = queryDate.get();
+    prevDate.push(newDate.toDate());
+    queryDate.set(prevDate);
+  };
   onAuditoryChange = newAuditory => queryAuditoryId.set(newAuditory);
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
   onTeacherChange = teachers => queryTeachersId.set(teachers);
@@ -165,6 +241,7 @@ class ModalActivityEvent extends React.Component<
 
   render() {
     const { form, modal, event, auditories, teachers } = this.props;
+    const { dateList } = this.state;
     const { getFieldDecorator } = form;
 
     const modalKind = modal.extra;
@@ -179,6 +256,8 @@ class ModalActivityEvent extends React.Component<
     const beginTime = event && event && formatDbToMoment(event.timeStart);
     const endTime = event && event && formatDbToMoment(event.timeEnd);
 
+    const dateFields = this.getDatesFields(dateList);
+
     return (
       <ModalForm
         visible={modal[name]}
@@ -189,7 +268,11 @@ class ModalActivityEvent extends React.Component<
         isEdit={modalKind}
         isLoading={isLoading}
       >
-        <div className={cx("from__item form__date")}>
+        <div
+          className={cx("from__item form__date", {
+            "form__no-margin": !modalKind
+          })}
+        >
           <FormItem label="Дата" hasFeedback>
             {getFieldDecorator("date", {
               initialValue: event ? moment(event.date) : null,
@@ -198,6 +281,14 @@ class ModalActivityEvent extends React.Component<
             })(<DatePicker onChange={this.onDateChange} />)}
           </FormItem>
         </div>
+        {dateFields || ""}
+        {!modalKind && (
+          <div className={cx("form__button-add")}>
+            <Button onClick={this.addDateField}>
+              <Icon type="plus" /> Добавить дату
+            </Button>
+          </div>
+        )}
         <div className={cx("from__item")}>
           <FormItem label="Преподаватели" hasFeedback>
             {getFieldDecorator("teachersId", {
@@ -218,16 +309,12 @@ class ModalActivityEvent extends React.Component<
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Выберите аудитрию" }]
             })(
-              <>
-                <Select onChange={this.onAuditoryChange}>
-                  {auditoryItems}
-                </Select>
-                {auditoryComment && (
-                  <div className={cx("form__comment")}>{auditoryComment}</div>
-                )}
-              </>
+              <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
             )}
           </FormItem>
+          {auditoryComment && (
+            <div className={cx("form__comment")}>{auditoryComment}</div>
+          )}
         </div>
         <div className={cx("from__item")}>
           <FormItem label="Время начала" hasFeedback>
