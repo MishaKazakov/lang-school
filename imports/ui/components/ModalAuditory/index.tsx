@@ -52,13 +52,15 @@ class ModalAuditory extends React.Component<
         { _id: id },
         {
           name: data.name,
-          capacity: data.capacity
+          capacity: data.capacity,
+          comment: data.comment
         }
       );
     } else {
       Auditories.insert({
         name: data.name,
-        capacity: data.capacity
+        capacity: data.capacity,
+        comment: data.comment
       });
     }
   };
@@ -95,13 +97,20 @@ class ModalAuditory extends React.Component<
             })(<Input />)}
           </FormItem>
         </div>
-        <div className={cx("from__item form__item_last-elem")}>
+        <div className={cx("from__item")}>
           <FormItem label="Вместимость" hasFeedback>
             {getFieldDecorator("capacity", {
               initialValue: auditory ? auditory.capacity : "",
               validateTrigger: ["onBlur", "onChange"],
               rules: [{ required: true, message: "Введите  число" }]
             })(<InputNumber min={1} />)}
+          </FormItem>
+        </div>
+        <div className={cx("from__item form__item_last-elem")}>
+          <FormItem label="Комментарий" hasFeedback>
+            {getFieldDecorator("comment", {
+              initialValue: auditory ? auditory.comment : ""
+            })(<Input />)}
           </FormItem>
         </div>
       </ModalForm>
