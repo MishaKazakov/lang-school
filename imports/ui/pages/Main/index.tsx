@@ -160,7 +160,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
         <AddPanel title={title} hide={hideAdd} onClick={this.addElement} />
         <div className={cx("main")}>
           <Weekdays startDay={date} />
-          <Schedule itemId={itemId} date={date} />
+          <Schedule itemId={itemId} date={date} category={category} />
           <div className={cx("main__panel")}>
             <Calendar
               value={calendarDate}

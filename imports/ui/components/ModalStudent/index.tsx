@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as InputMask from "react-input-mask/dist/react-input-mask.min";
 import { connect } from "react-redux";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
@@ -84,7 +83,8 @@ class ModalStudent extends React.Component<
           firstName: data.firstName,
           secondName: data.secondName,
           phone: data.phone,
-          group: this.formGroupsToDB(data)
+          group: this.formGroupsToDB(data),
+          modifiedAt: new Date()
         }
       );
     } else {
@@ -93,7 +93,8 @@ class ModalStudent extends React.Component<
         firstName: data.firstName,
         secondName: data.secondName,
         phone: data.phone,
-        group: this.formGroupsToDB(data)
+        group: this.formGroupsToDB(data),
+        modifiedAt: new Date()
       });
     }
   };
@@ -250,18 +251,10 @@ class ModalStudent extends React.Component<
           </Button>
         </div>
         <div className={cx("from__item form__item_last-elem")}>
-          <FormItem label="Номер телефона" hasFeedback>
+          <FormItem label="Контакты" hasFeedback>
             {getFieldDecorator("phone", {
-              initialValue: student ? student.phone : "",
-              validateTrigger: ["onBlur", "onChange"],
-              rules: [
-                { required: true, message: "Введите  номер телефона" },
-                {
-                  pattern: /\d{11}/,
-                  message: "Введите номер телефона полностью"
-                }
-              ]
-            })(<InputMask className="ant-input" mask="+79999999999" />)}
+              initialValue: student ? student.phone : ""
+            })(<Input />)}
           </FormItem>
         </div>
       </ModalForm>

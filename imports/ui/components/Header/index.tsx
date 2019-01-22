@@ -17,7 +17,7 @@ class Students extends React.Component<IProps> {
     return (
       <header className={cx("header")}>
         <Link to="/" className={cx("header__text")}>
-          Языковая школа
+          Главная
         </Link>
         <Link to="/students" className={cx("header__text")}>
           Студенты

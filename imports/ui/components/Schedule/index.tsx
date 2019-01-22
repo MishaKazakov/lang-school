@@ -7,17 +7,18 @@ const cx = require("classnames/bind").bind(require("./style.scss"));
 interface IProps {
   date: Date;
   itemId: string | null;
+  category: string;
 }
 
 class Schedule extends React.Component<IProps> {
   render() {
-    const { date, itemId } = this.props;
+    const { date, itemId, category } = this.props;
     return (
       <div className={cx("schedule")}>
         <div className={cx("schedule__table")}>
           <TimeRuler />
           {itemId ? (
-            <Grid itemId={itemId} date={date} />
+            <Grid itemId={itemId} date={date} category={category} />
           ) : (
             <div className={cx("schedule__nogroup")}>Выберите из списка</div>
           )}
