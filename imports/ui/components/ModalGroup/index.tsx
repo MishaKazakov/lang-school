@@ -148,6 +148,7 @@ class ModalGroup extends React.Component<
             })(<InputNumber min={1} />)}
           </FormItem>
         </div>
+        <div>По умолчанию группа является постоянной</div>
       </ModalForm>
     );
   }

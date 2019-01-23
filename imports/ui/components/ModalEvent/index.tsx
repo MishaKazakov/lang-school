@@ -314,7 +314,7 @@ class ModalEvent extends React.Component<
               "from__item form__item_last-elem form__item__checkbox"
             )}
           >
-            <FormItem label="Для всего последующего расписания" hasFeedback>
+            <FormItem label="Изменить последующие занятия" hasFeedback>
               {getFieldDecorator("forFuture")(
                 <Checkbox onChange={this.onChangeFutureEvents} />
               )}
