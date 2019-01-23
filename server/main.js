@@ -8,9 +8,11 @@ import "../imports/api/students";
 import "../imports/api/registrator";
 import { startRegister } from "../imports/api/registrator";
 import { startPermanentEventObserver } from "../imports/api/permamentEvents";
+import { ConfigureUserAccounts } from "../imports/api/users";
 
 Meteor.startup(() => {
   // code to run on server at startup
   startRegister();
   startPermanentEventObserver();
+  ConfigureUserAccounts();
 });

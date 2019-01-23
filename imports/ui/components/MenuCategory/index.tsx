@@ -12,6 +12,7 @@ import { Groups } from "../../../api/groups";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
+import { Meteor } from "meteor/meteor";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -44,11 +45,20 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
   onAddClick = () => this.props.openModal(this.props.url);
   onEditClick = _id => this.props.openModal(this.props.url, _id);
 
+  isAccessable = (item:any, user)=>{
+    //const user = Meteor.user() as { _id: string; profile: { role: string }; };
+    return !user ||
+    (!item.userId ||
+      item.userId === user._id ||
+      user.profile.role === "admin");
+  }
+
   render() {
     const { name, url, open, items } = this.props;
     const address = "/" + url;
     const isOpen = open === url;
     const onClick = () => this.props.onClick(url, name);
+    const user = Meteor.user() as { _id: string; profile: { role: string }; };
 
     return (
       <div className={cx("menu-category")}>
@@ -63,14 +73,16 @@ class MenuCategory extends React.Component<IProps & IDispatchFromProps> {
         </Link>
         {isOpen && (
           <div className={cx("menu-category__list")}>
-            {items.map(item => (
-              <MenuItem
-                key={item._id}
-                item={item}
-                url={address}
-                onClick={this.onEditClick}
-              />
-            ))}
+            {items.map(
+              item => this.isAccessable(item, user) && (
+                  <MenuItem
+                    key={item._id}
+                    item={item}
+                    url={address}
+                    onClick={this.onEditClick}
+                  />
+                )
+            )}
             <Button
               icon={Button.ICON.ADD}
               size={Button.SIZE.SMALL}

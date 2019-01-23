@@ -23,3 +23,5 @@ barbatus:typescript
 seba:minifiers-autoprefixer
 react-meteor-data
 less
+accounts-base
+accounts-password

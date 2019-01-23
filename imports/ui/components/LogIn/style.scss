@@ -1,0 +1,11 @@
+@import "../ModalFrom/style.scss";
+
+.form {
+  max-width: 300px;
+}
+
+.form__button-center {
+  position: relative;
+  width: 80px;
+  left: calc(50% - 40px);
+}
