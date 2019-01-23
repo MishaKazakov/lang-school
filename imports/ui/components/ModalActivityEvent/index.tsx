@@ -129,7 +129,7 @@ class ModalActivityEvent extends React.Component<
       this.createEvents(activity, numClasses, data, date);
       dateList.forEach(dateNum => {
         const newDate = setToMidnight(data[`date${dateNum}`]);
-        console.log("newDate", newDate);
+        //console.log("newDate", newDate);
         this.createEvents(activity, numClasses, data, newDate);
       });
     }

@@ -23,6 +23,8 @@ import { compose } from "redux";
 import { connect } from "react-redux";
 import { openModal } from "../../reducers/modalReducer";
 import { Meteor } from "meteor/meteor";
+import { ITeacher } from "imports/models/teacher";
+import { IUser } from "imports/models/user";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -31,7 +33,7 @@ interface IProps {
   history: History;
   match: match<{ id: string }>;
   item: any;
-  user: { _id: string; profile: { role: string } };
+  user: IUser;
 }
 
 interface IDispatchFromProps {
@@ -122,9 +124,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
   checkForTeacher = (user: { _id: string; profile: { role: string } }) => {
     if (this.props.location.pathname.substr(1) === "") {
       if (user.profile.role === "teacher") {
-        const teacher = Teachers.findOne({ userId: user._id }) as {
-          _id: string;
-        };
+        const teacher = Teachers.findOne({ userId: user._id }) as ITeacher;
         this.setState({
           category: "teacher",
           itemId: teacher._id
@@ -206,7 +206,7 @@ export default compose(
 
     return {
       item: items.find(item => !!item),
-      user: Meteor.user()
+      user: Meteor.user() as IUser
     };
   })
 )(Main);

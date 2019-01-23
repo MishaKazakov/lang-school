@@ -81,7 +81,7 @@ class LogIn extends React.Component<FormProps & IProps, IState> {
               rules: [
                 { required: true, message: "Введите email" },
                 {
-                  pattern: /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+                  type: "email",
                   message: "Введите email полностью"
                 }
               ]
@@ -99,6 +99,7 @@ class LogIn extends React.Component<FormProps & IProps, IState> {
         <Button
           type={Button.TYPE.PRIMARY}
           key="submit"
+          htmlType={Button.HTMLTYPE.SUBMIT}
           className={cx("form__button-center")}
           onClick={this.onSubmit}
         >

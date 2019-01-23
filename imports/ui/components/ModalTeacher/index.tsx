@@ -61,7 +61,6 @@ class ModalTeacher extends React.Component<
     teacher &&
       teacher.userId &&
       Meteor.call("getUserEmail", teacher.userId, (error, result) => {
-        console.log(result);
         if (!error) this.setState({ email: result });
       });
   }
@@ -71,7 +70,7 @@ class ModalTeacher extends React.Component<
     const id = teacher && teacher._id;
 
     if (id) {
-      Meteor.call("updateTeacher", data, (error, data: string) => {
+      Meteor.call("updateTeacher", id, data, (error, data: string) => {
         if (error) {
           console.log(error);
           message.error(
@@ -96,7 +95,15 @@ class ModalTeacher extends React.Component<
     }
   };
 
-  onDelete = () => Teachers.remove({ _id: this.props.teacher._id });
+  onDelete = () =>
+    Meteor.call("removeTeacher", this.props.teacher._id, (error, data) => {
+      if (error) {
+        console.log(error);
+        message.error("Ошибка, невозможно удалить пользователя");
+      } else {
+        message.success("Пользователь успешно удален", 5);
+      }
+    });
 
   render() {
     const { form, modal, teacher } = this.props;
@@ -189,7 +196,7 @@ class ModalTeacher extends React.Component<
               rules: [
                 { required: true, message: "Введите  email" },
                 {
-                  pattern: /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+                  type: "email",
                   message: "Введите email полностью"
                 }
               ]
@@ -215,7 +222,7 @@ export default compose(
   withTracker<IDataProps, IProps & IStateToProps>(({ modal }) => {
     const _id = modal.extra;
     const teacher = _id && Teachers.findOne({ _id });
-
+    
     return {
       teacher
     };

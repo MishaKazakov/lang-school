@@ -2,6 +2,7 @@ import { Mongo } from "meteor/mongo";
 import { ITeacher, ITeacherForm } from "../models/teacher";
 import { Accounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
+import { IUser } from "../models/user";
 
 export const Teachers = new Mongo.Collection("teachers");
 
@@ -16,23 +17,17 @@ Meteor.methods({
   updateTeacher: (_id: string, data: ITeacherForm) => updateTeacher(_id, data)
 });
 
+Meteor.methods({
+  removeTeacher: (_id: string) => removeTeacher(_id)
+});
+
 const createTeacher = (data: ITeacherForm) => {
   if (Meteor.isServer) {
-    const email = data.email;
-
-    const existUser = Accounts.findUserByEmail(email);
-
-    if (existUser) {
-      throw new Meteor.Error("userExists");
-    }
-
-    Accounts.createUser({
-      email: email,
+    const userId = Accounts.createUser({
+      email: data.email,
       password: defaultPassword,
       profile: { role: teacherRole }
     });
-
-    const userId = (Accounts.findUserByEmail(email) as { _id: string })._id;
 
     Teachers.insert({
       firstName: data.firstName,
@@ -48,27 +43,34 @@ const createTeacher = (data: ITeacherForm) => {
 
 const updateTeacher = (_id: string, data: ITeacherForm) => {
   if (Meteor.isServer) {
+    const teacher = Teachers.findOne({ _id }) as ITeacher;
+    const user = Meteor.users.findOne({ _id: teacher.userId }) as IUser;
+
     Teachers.update(
       { _id },
       {
         firstName: data.firstName,
         secondName: data.secondName,
         lastName: data.lastName,
-        phone: data.phone
+        phone: data.phone,
+        userId: user._id
       }
     );
 
-    const teacher = Teachers.findOne(_id) as ITeacher;
-    const user = Meteor.users.find(teacher.userId) as {
-      _id: string;
-      emails: { address: string }[];
-    };
     const newEmail = data.email;
     const oldEmail = user.emails[0].address;
 
-    if (newEmail === oldEmail) return;
-
-    Accounts.addEmail(user._id, newEmail);
-    Accounts.removeEmail(user._id,oldEmail);
+    if (newEmail !== oldEmail) {
+      Accounts.addEmail(user._id, newEmail);
+      Accounts.removeEmail(user._id, oldEmail);
+    }
   }
+};
+
+const removeTeacher = (_id: string) => {
+  const teacher = Teachers.findOne({ _id }) as ITeacher;
+  const user = Meteor.users.findOne({ _id: teacher.userId }) as IUser;
+
+  Teachers.remove({ _id });
+  Meteor.users.remove({ _id: user._id });
 };
