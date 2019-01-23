@@ -7,7 +7,7 @@
   text-decoration: none;
 
   & + & {
-    padding-left: 20px;
+    margin-left: 20px;
   }
 
   &:visited,
@@ -15,6 +15,11 @@
   &:active,
   &:link {
     color: inherit;
+  }
+
+  &:hover,
+  &:active, {
+    opacity: 0.8;
   }
 }
 

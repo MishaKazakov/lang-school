@@ -4,6 +4,7 @@ import { IStore } from "../../../models/store";
 import { IAuditory } from "../../../models/auditory";
 import { IEvent, IEventForm } from "../../../models/event";
 import { IGroup } from "../../..//models/group";
+import { ITeacher } from "../../../models/teacher";
 import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
@@ -14,6 +15,7 @@ import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
+import { Teachers } from "../../../api/teachers";
 import { Groups } from "../../../api/groups";
 import {
   Events,
@@ -54,6 +56,7 @@ interface IProps {
   event?: IEvent;
   group: IGroup;
   futureEvents?: IEvent[];
+  teacher?: ITeacher;
 }
 
 const name = "element-group";
@@ -204,7 +207,7 @@ class ModalEvent extends React.Component<
     ).comment;
 
   render() {
-    const { form, modal, event } = this.props;
+    const { form, modal, event, teacher } = this.props;
     const { dateList } = this.state;
     const { getFieldDecorator } = form;
 
@@ -220,7 +223,8 @@ class ModalEvent extends React.Component<
     const endTime = event && formatDbToMoment(event.timeEnd);
 
     const dateFields = this.getDatesFields(dateList);
-    
+    const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : "";
+
     return (
       <ModalForm
         visible={modal[name]}
@@ -231,6 +235,7 @@ class ModalEvent extends React.Component<
         isLoading={isLoading}
         isEdit={modalKind}
       >
+        {modalKind && <div className={cx("form__subtitle")}>Преподаватель {teacherName}</div>}
         <div
           className={cx("from__item form__date", {
             "form__no-margin": !modalKind
@@ -257,9 +262,7 @@ class ModalEvent extends React.Component<
         >
           <FormItem label="Аудитория" hasFeedback>
             {getFieldDecorator("auditoryId", {
-              initialValue: event ? event.auditoryId : "",
-              validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберите аудитрию" }]
+              initialValue: event ? event.auditoryId : ""
             })(
               <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
             )}
@@ -339,7 +342,7 @@ export default compose(
     const event: any = _id && Events.findOne({ _id });
     const group: any = Groups.findOne({ _id: modal.groupId });
     const date = queryDate.get() || (event && event.date);
-
+    const teacher = event && Teachers.findOne({ _id: event.teachersId });
     const isFutureEvents = queryFutureEvents.get();
     const futureEvents =
       isFutureEvents &&
@@ -358,6 +361,7 @@ export default compose(
       auditories: Auditories.find().fetch(),
       events,
       group,
+      teacher,
       futureEvents
     };
   })

@@ -20,6 +20,7 @@ interface IProps {
   events?: IEvent[];
   auditories?: IAuditory[];
   itemId: string;
+  category: string;
 }
 
 // чтобы занятие появилось нужно открыть другую консоль
@@ -63,7 +64,7 @@ class Grid extends React.PureComponent<IProps & IDataProps> {
   };
 
   render() {
-    const { events, auditories, itemId } = this.props;
+    const { events, auditories, itemId, category } = this.props;
     const { schedule, earliestHour } = this.prepareEvents(events);
     this.scrollPage(earliestHour);
 
@@ -80,6 +81,7 @@ class Grid extends React.PureComponent<IProps & IDataProps> {
                     auditories={auditories}
                     event={e}
                     key={e._id}
+                    category={category}
                   />
                 ))}
             </div>
