@@ -101,7 +101,7 @@ class ModalActivity extends React.Component<
           </FormItem>
         </div>
         <div className={cx("from__item")}>
-          <FormItem label="Количество занятий" hasFeedback>
+          <FormItem label="Количество" hasFeedback>
             {getFieldDecorator("numberOfClasses", {
               initialValue: activity ? activity.numberOfClasses : 1
             })(<InputNum min={1} />)}
