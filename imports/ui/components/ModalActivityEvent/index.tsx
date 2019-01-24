@@ -134,7 +134,6 @@ class ModalActivityEvent extends React.Component<
       } else if (activity.numberOfClasses) {
         numClasses = activity.numberOfClasses;
       }
-      console.log(numClasses)
 
       this.createEvents(activity, numClasses, data, date);
       dateList.forEach(dateNum => {
@@ -145,13 +144,24 @@ class ModalActivityEvent extends React.Component<
   };
 
   createEvents = (activity, numClasses, data, date) => {
-    createEvent({ data, group: activity, date, referenceable: true });
+    createEvent({
+      data,
+      group: activity,
+      date,
+      referenceable: true,
+      isActivity: true
+    });
 
     for (let i = 1; i < numClasses; i++) {
       const nextDay = moment(date);
-      nextDay.add(7* i, "days");
+      nextDay.add(7 * i, "days");
 
-      createEvent({ data, group: activity, date: nextDay.toDate() });
+      createEvent({
+        data,
+        group: activity,
+        date: nextDay.toDate(),
+        isActivity: true
+      });
     }
   };
 

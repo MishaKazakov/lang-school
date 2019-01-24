@@ -13,6 +13,7 @@ export interface IEvent {
   timeStart: number[];
   timeEnd: number[];
   dateCreated?: Date;
+  isActivity: boolean;
 }
 
 export interface IEventForm {

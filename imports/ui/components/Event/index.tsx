@@ -29,8 +29,10 @@ class Event extends React.Component<IProps & IDispatchFromProps> {
     (endTime[0] - startTime[0]) * 60 + endTime[1] - startTime[1];
 
   onEditClick = () => {
-    const { openModal, event, itemId, category } = this.props;
-    openModal(`element-${category}`, event._id, itemId);
+    const { openModal, event, itemId } = this.props;
+    const modalCategory = event.isActivity ? "activity" : "group";
+
+    openModal(`element-${modalCategory}`, event._id, itemId);
   };
 
   onDeleteClick = () => "";
