@@ -9,6 +9,8 @@ import { withRouter, match } from "react-router";
 import AddPanel from "../../components/AddPanel";
 import Weekdays from "../../components/Weekdays";
 import { ITeacher } from "imports/models/teacher";
+import { IUser } from "imports/models/user";
+import { Meteor } from "meteor/meteor";
 
 import * as qs from "query-string";
 import * as moment from "moment";
@@ -23,9 +25,6 @@ import { Groups } from "../../../api/groups";
 import { compose } from "redux";
 import { connect } from "react-redux";
 import { openModal } from "../../reducers/modalReducer";
-import { Meteor } from "meteor/meteor";
-import { ITeacher } from "imports/models/teacher";
-import { IUser } from "imports/models/user";
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
