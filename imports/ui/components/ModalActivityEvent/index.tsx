@@ -107,7 +107,7 @@ class ModalActivityEvent extends React.Component<
     const { event, futureEvents, activity } = this.props;
     const { dateList } = this.state;
     const id = event && event._id;
-    const isInfinite = data.forFuture;
+    const forFuture = data.forFuture;
     const date: Date = setToMidnight(data.date);
 
     if (id) {
@@ -116,11 +116,11 @@ class ModalActivityEvent extends React.Component<
         group: activity,
         date,
         event,
-        referenceable: isInfinite
+        referenceable: forFuture
       });
 
       date.setDate(date.getDate() + 7);
-      isInfinite &&
+      forFuture &&
         futureEvents.forEach((event, i) => {
           const nextDay = new Date(date);
           nextDay.setDate(nextDay.getDate() + 7 * i);
@@ -129,12 +129,12 @@ class ModalActivityEvent extends React.Component<
         });
     } else {
       let numClasses = 1;
-      if (activity.numberOfClasses) {
+      if (activity.isInfinite) {
+        numClasses = 10;
+      } else if (activity.numberOfClasses) {
         numClasses = activity.numberOfClasses;
       }
-      if (isInfinite) {
-        numClasses = 10;
-      }
+      console.log(numClasses)
 
       this.createEvents(activity, numClasses, data, date);
       dateList.forEach(dateNum => {
@@ -148,10 +148,10 @@ class ModalActivityEvent extends React.Component<
     createEvent({ data, group: activity, date, referenceable: true });
 
     for (let i = 1; i < numClasses; i++) {
-      const nextDay = new Date(date);
-      nextDay.setDate(nextDay.getDate() + 7 * i);
+      const nextDay = moment(date);
+      nextDay.add(7* i, "days");
 
-      createEvent({ data, group: activity, date: nextDay });
+      createEvent({ data, group: activity, date: nextDay.toDate() });
     }
   };
 

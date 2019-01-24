@@ -18,7 +18,7 @@ interface IEventOperations {
 }
 
 export const createEvent = (eventData: IEventOperations) => {
-  const { data, date, referenceable } = eventData;
+  const { data, date, referenceable, } = eventData;
   const group = <IGroup>eventData.group;
   const timeStart = formatMomentToDb(data.timeStart);
   const timeEnd = formatMomentToDb(data.timeEnd);
@@ -35,7 +35,6 @@ export const createEvent = (eventData: IEventOperations) => {
       date,
       timeStart,
       timeEnd,
-      isInfinite: !group.numberOfClasses,
       beginDate: data.timeStart.toDate(),
       endDate: data.timeEnd.toDate(),
       visible: true,
