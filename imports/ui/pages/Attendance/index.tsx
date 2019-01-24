@@ -122,7 +122,7 @@ class Attendance extends React.Component<IProps> {
     }
 
     if (isIncludes(group.canceled, eventId)) {
-      group.canceled = group.miss.filter(
+      group.canceled = group.canceled.filter(
         (status: IStatus) => status.id != eventId
       );
       group.attended.push(eventStat);
@@ -132,7 +132,7 @@ class Attendance extends React.Component<IProps> {
       return;
     }
 
-    group.attended = group.miss.filter(
+    group.attended = group.attended.filter(
       (status: IStatus) => status.id != eventId
     );
     group.miss.push(eventStat);

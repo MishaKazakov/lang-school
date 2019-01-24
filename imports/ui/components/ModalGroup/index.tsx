@@ -5,6 +5,7 @@ import { IStore } from "../../../models/store";
 import { ITeacher } from "../../../models/teacher";
 import { IGroup } from "../../../models/group";
 import { IEvent } from "../../../models/event";
+import { IStudent } from "../../../models/student";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
 import ModalForm from "../ModalFrom";
@@ -13,6 +14,7 @@ import * as moment from "moment";
 import { Groups } from "../../../api/groups";
 import { Teachers } from "../../../api/teachers";
 import { Events } from "../../../api/events";
+import { Students } from "../../../api/students";
 
 import { compose } from "redux";
 import { withTracker } from "meteor/react-meteor-data";
@@ -75,7 +77,7 @@ class ModalGroup extends React.Component<
       );
       if (group.teacherId !== data.teacherId) {
         const events = Events.find({ groupId: group._id }).fetch();
-        
+
         events.forEach((event: IEvent) =>
           Events.update(
             { _id: event._id },
@@ -96,9 +98,23 @@ class ModalGroup extends React.Component<
   };
 
   onDelete = () => {
-    const _id = this.props.group._id;
-    Groups.remove({ _id });
-    Events.find({ group_id: _id }).count() && Events.remove({ group_id: _id });
+    const groupId = this.props.group._id;
+    Groups.remove({ _id: groupId });
+
+    const events = Events.find({ groupId: groupId }).fetch();
+    events.forEach((event: IEvent) => Events.remove({ _id: event._id }));
+
+    const students = Students.find({ groupId: groupId }).fetch();
+    students.forEach((student: IStudent) => {
+      Students.update(
+        { _id: student._id },
+        {
+          $unset: {
+            [`group.${groupId}`]: ""
+          }
+        }
+      );
+    });
   };
 
   getTeacherItems = (teachers: ITeacher[]) =>

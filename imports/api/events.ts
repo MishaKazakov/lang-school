@@ -15,10 +15,11 @@ interface IEventOperations {
   date?: Date;
   event?: IEvent;
   referenceable?: boolean;
+  isActivity?: boolean;
 }
 
 export const createEvent = (eventData: IEventOperations) => {
-  const { data, date, referenceable, } = eventData;
+  const { data, date, referenceable, isActivity } = eventData;
   const group = <IGroup>eventData.group;
   const timeStart = formatMomentToDb(data.timeStart);
   const timeEnd = formatMomentToDb(data.timeEnd);
@@ -38,7 +39,8 @@ export const createEvent = (eventData: IEventOperations) => {
       beginDate: data.timeStart.toDate(),
       endDate: data.timeEnd.toDate(),
       visible: true,
-      day: date.getDay()
+      day: date.getDay(),
+      isActivity
     },
     createRef
   );
@@ -56,18 +58,20 @@ export const updateEvent = (eventData: IEventOperations) => {
   Events.update(
     { _id: event._id },
     {
-      name: group.name,
-      auditoryId: data.auditoryId,
-      teachersId: group.teacherId || data.teachersId,
-      groupId: group._id,
-      date,
-      timeStart,
-      timeEnd,
-      isInfinite: !group.numberOfClasses,
-      beginDate: data.timeStart.toDate(),
-      endDate: data.timeEnd.toDate(),
-      visible: true,
-      day: date.getDay()
+      $set: {
+        name: group.name,
+        auditoryId: data.auditoryId,
+        teachersId: group.teacherId || data.teachersId,
+        groupId: group._id,
+        date,
+        timeStart,
+        timeEnd,
+        isInfinite: !group.numberOfClasses,
+        beginDate: data.timeStart.toDate(),
+        endDate: data.timeEnd.toDate(),
+        visible: true,
+        day: date.getDay()
+      }
     },
     null,
     createRef

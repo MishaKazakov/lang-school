@@ -59,17 +59,19 @@ class StudentTable extends React.Component<IProps, IState> {
   };
 
   renderGroup = (text: string, record: IStudent) => {
+    const { groups } = this.props;
     const handleClick = () => this.props.edit(record._id);
-    const groups = [];
+    const groupNames = [];
+
     for (let groupId in record.group) {
-      const groupName = this.props.groups.find(group => group._id === groupId)
-        .name;
-      groups.push(groupName);
+      const groupName =
+        groups && groups.find(group => group._id === groupId).name;
+      groupNames.push(groupName);
     }
 
     return (
       <div className={cx("link")} onClick={handleClick}>
-        {groups.join(", ")}
+        {groupNames.join(", ")}
       </div>
     );
   };

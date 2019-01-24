@@ -25,8 +25,6 @@ class Students extends React.Component<IDispatchFromProps, IState> {
   editStudent = student => this.props.openModal("student", student);
   addStudent = () => this.props.openModal("student");
 
-  onSearch = val => console.log(val);
-
   render() {
     return (
       <Layout>
