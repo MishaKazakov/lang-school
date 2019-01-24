@@ -190,7 +190,7 @@ class ModalEvent extends React.Component<
     }
 
     if (!nearestEvent) return;
-    console.log(nearestEvent);
+    
     const eventStartTime = nearestEvent.beginDate;
 
     if (hour === eventStartTime.getHours()) {

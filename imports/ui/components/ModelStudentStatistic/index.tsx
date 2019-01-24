@@ -117,7 +117,7 @@ class ModelStudentStatistic extends React.Component<IProps> {
         key={title}
         title={
           <span>
-            Отменено:
+            {title}:
             <span className={cx("group-data__value")}>
               занятий {Statuses.length}.
             </span>

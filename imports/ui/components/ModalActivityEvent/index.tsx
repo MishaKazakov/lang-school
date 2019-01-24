@@ -238,7 +238,10 @@ class ModalActivityEvent extends React.Component<
     const { form, nearestEvent } = this.props;
     const { timeEnd }: any = form.getFieldsValue(["timeEnd"]);
 
-    if (!nearestEvent) callback();
+    if (!nearestEvent) {
+      callback();
+      return;
+    }
 
     const eventStartTime = nearestEvent.beginDate;
 
