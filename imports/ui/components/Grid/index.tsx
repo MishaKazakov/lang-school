@@ -93,8 +93,8 @@ class Grid extends React.PureComponent<IProps & IDataProps> {
 }
 
 export default withTracker<IDataProps, IProps>(({ date: monday, itemId }) => {
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
+  const sunday = monday && new Date(monday);
+  monday && sunday.setDate(monday.getDate() + 6);
 
   return {
     events: Events.find({

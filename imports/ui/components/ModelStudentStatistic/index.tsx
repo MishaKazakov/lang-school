@@ -1,12 +1,16 @@
 import * as React from "react";
 import { withTracker } from "meteor/react-meteor-data";
-import { IStudent, IStudentGroup } from "../../../models/student";
+import { IStudent, IStudentGroup, IStatus } from "../../../models/student";
 import { IGroup } from "../../../models/group";
 import Button from "../Button";
 import { Students } from "../../../api/students";
 import { Groups } from "../../../api/groups";
+import { dateString } from "../../../helpers/time";
 
 const Modal = require("antd/lib/modal");
+const Menu = require("antd/lib/menu");
+const MenuItemGroup = Menu.ItemGroup;
+const SubMenu = Menu.SubMenu;
 
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
@@ -24,7 +28,7 @@ class ModelStudentStatistic extends React.Component<IProps> {
     const title =
       student && `Статистика ${student.firstName} ${student.lastName}`;
     const statistic = student && this.getStatistic(student, groups);
-    
+
     return (
       <Modal
         title={title}
@@ -66,33 +70,66 @@ class ModelStudentStatistic extends React.Component<IProps> {
   };
 
   groupElements = (groupData: IStudentGroup, name: string) => {
-    const { _id, numberLessons, attended, miss, canceled } = groupData;
+    const {
+      _id,
+      numberLessons,
+      attended,
+      miss,
+      canceled,
+      purchaseDate
+    } = groupData;
     const balance = numberLessons - attended.length - miss.length;
 
     return (
       <div key={_id} className={cx("group-data")}>
         <div className={cx("group-data__title")}>{`Группа ${name}`}</div>
-        <div className={cx("group-data__field")}>
-          Оплачено:
-          <span className={cx("group-data__value")}>{numberLessons}</span>
-        </div>
-        <div className={cx("group-data__field")}>
-          Посещено:
-          <span className={cx("group-data__value")}>{attended.length}</span>
-        </div>
-        <div className={cx("group-data__field")}>
-          Пропушено:
-          <span className={cx("group-data__value")}>{miss.length}</span>
-        </div>
-        <div className={cx("group-data__field")}>
-          Отменено:
-          <span className={cx("group-data__value")}>{canceled.length}</span>
-        </div>
-        <div className={cx("group-data__field")}>
-          Осталось:
-          <span className={cx("group-data__value")}>{balance}</span>
-        </div>
+        <Menu mode="inline">
+          <Menu.Item key="numberLessons">
+            <span>
+              Оплачено:
+              <span className={cx("group-data__value")}>
+                занятий {numberLessons}.
+              </span>
+              <span className={cx("group-data__value")}>
+                Дата: {dateString(purchaseDate)}
+              </span>
+            </span>
+          </Menu.Item>
+          {this.getStatisticGroup("Посещено", attended)}
+          {this.getStatisticGroup("Пропущено", miss)}
+          {this.getStatisticGroup("Отменено", canceled)}
+          <Menu.Item key="balance">
+            <div>
+              Осталось:
+              <span className={cx("group-data__value")}>
+                занятий {balance}.
+              </span>
+            </div>
+          </Menu.Item>
+        </Menu>
       </div>
+    );
+  };
+
+  getStatisticGroup = (title, Statuses: IStatus[]) => {
+    return (
+      <SubMenu
+        key={title}
+        title={
+          <span>
+            Отменено:
+            <span className={cx("group-data__value")}>
+              занятий {Statuses.length}.
+            </span>
+          </span>
+        }
+      >
+        <MenuItemGroup title="Даты занятий:">
+          {Statuses.map((stat: IStatus, i) => (
+            <Menu.Item key={stat.id} className={cx("statistic__date")}>{dateString(stat.date)}</Menu.Item>
+          ))}
+        </MenuItemGroup>
+      </SubMenu>
     );
   };
 }

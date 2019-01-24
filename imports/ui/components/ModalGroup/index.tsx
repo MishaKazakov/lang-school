@@ -73,6 +73,16 @@ class ModalGroup extends React.Component<
           isInfinite
         }
       );
+      if (group.teacherId !== data.teacherId) {
+        const events = Events.find({ groupId: group._id }).fetch();
+        
+        events.forEach((event: IEvent) =>
+          Events.update(
+            { _id: event._id },
+            { $set: { teachersId: data.teacherId } }
+          )
+        );
+      }
     } else {
       Groups.insert({
         name: data.name,

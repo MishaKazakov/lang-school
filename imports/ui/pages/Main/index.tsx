@@ -8,6 +8,7 @@ import { Location, History } from "history";
 import { withRouter, match } from "react-router";
 import AddPanel from "../../components/AddPanel";
 import Weekdays from "../../components/Weekdays";
+import { ITeacher } from "imports/models/teacher";
 
 import * as qs from "query-string";
 import * as moment from "moment";
@@ -34,6 +35,7 @@ interface IProps {
   match: match<{ id: string }>;
   item: any;
   user: IUser;
+  teacher: ITeacher;
 }
 
 interface IDispatchFromProps {
@@ -80,9 +82,13 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
     const location = props.location;
     const path = location.pathname.substr(1);
     const id = qs.parse(location.search)["id"];
+    const date = qs.parse(location.search)["date"]
+      ? new Date(qs.parse(location.search)["date"])
+      : new Date();
+
     this.state = {
-      date: this.getMonday(new Date()),
-      calendarDate: new Date(),
+      date: this.getMonday(date),
+      calendarDate: date,
       category: path || "group",
       itemId: id,
       checkedForTeacher: false
@@ -115,9 +121,23 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
   changeCategory = (category: string) => this.setState({ category });
 
   onDateChange = (newDate: Date) => {
+    const date = this.getMonday(newDate);
+    this.updateQueryDate(date);
+
     this.setState({
-      date: this.getMonday(newDate),
+      date,
       calendarDate: newDate
+    });
+  };
+
+  updateQueryDate = (date: Date) => {
+    const { history, location } = this.props;
+    const { itemId } = this.state;
+    const search = qs.stringify({ date: date.toDateString(), id: itemId });
+
+    history.push({
+      pathname: location.pathname,
+      search
     });
   };
 
@@ -142,18 +162,28 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
       itemId,
       checkedForTeacher
     } = this.state;
-    const { item, user } = this.props;
+    const { item, user, teacher } = this.props;
     user && !checkedForTeacher && this.checkForTeacher(user);
-    const curCategory = categories.find(item => item.url === category);
-    const categoryName = itemId ? curCategory.singleName : curCategory.name;
+
     const hideAdd = !itemId || !["group", "activity"].includes(category);
+
+    const currentCategory = categories.find(item => item.url === category);
+    const categoryName = itemId
+      ? currentCategory.singleName
+      : currentCategory.name;
     const itemTitle = item
       ? item.name
         ? item.name
         : `${item.lastName} ${item.firstName}`
       : "";
-    const title = `${categoryName} ${itemTitle}`;
-    
+
+    const teacherName = teacher
+      ? `${teacher.lastName} ${teacher.firstName}`
+      : "";
+    const title = teacherName
+      ? `${categoryName} ${itemTitle}. Преподаватель: ${teacherName}`
+      : `${categoryName} ${itemTitle}`;
+
     return (
       <Layout>
         <MenuModals />
@@ -165,6 +195,7 @@ class Main extends React.Component<IProps & IDispatchFromProps, IState> {
             <Calendar
               value={calendarDate}
               onChange={this.onDateChange}
+              onClickMonth={this.onDateChange}
               className={cx("main__calendar")}
               prev2Label={null}
               next2Label={null}
@@ -196,6 +227,7 @@ export default compose(
   ),
   withTracker<any, IProps>(({ location }) => {
     const _id = qs.parse(location.search)["id"];
+    let teacher;
 
     const items = [
       Auditories.findOne({ _id }),
@@ -203,10 +235,16 @@ export default compose(
       Groups.findOne({ _id }),
       Activities.findOne({ _id })
     ];
+    const item: any = items.find(item => !!item);
+
+    // is teacher
+    if (item && item.teacherId)
+      teacher = Teachers.findOne({ _id: item.teacherId });
 
     return {
-      item: items.find(item => !!item),
-      user: Meteor.user() as IUser
+      user: Meteor.user() as IUser,
+      item,
+      teacher
     };
   })
 )(Main);

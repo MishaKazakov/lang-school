@@ -5,10 +5,14 @@ import { Students } from "./students";
 import { IEvent } from "../models/event";
 import { IStudent } from "../models/student";
 import { formatDbToMoment } from "../helpers/time";
+import { isIncludes } from "../helpers/events";
 
 const HOUR = 3600000;
 
-export const startRegister = () => Meteor.setInterval(registerEvents, HOUR);
+export const startRegister = () => {
+  registerEvents();
+  Meteor.setInterval(registerEvents, HOUR);
+};
 
 const events = {};
 
@@ -56,11 +60,12 @@ function checkEventAttendance(event: IEvent) {
     const group = student.group[groupId];
 
     if (
-      !group.attended.includes(eventId) &&
-      !group.canceled.includes(eventId) &&
-      !group.miss.includes(eventId)
+      !isIncludes(group.attended, eventId) &&
+      !isIncludes(group.canceled, eventId) &&
+      !isIncludes(group.miss, eventId)
     ) {
-      group.attended.push(eventId);
+      group.attended.push({ id: eventId, date: event.date });
+
       student.group[groupId] = group;
       Students.update(
         { _id: student._id },

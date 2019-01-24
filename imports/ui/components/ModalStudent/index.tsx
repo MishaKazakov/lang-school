@@ -2,7 +2,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
-import { IStudent } from "../../../models/student";
+import { IStudent, IStudentGroup } from "../../../models/student";
 import { IGroup } from "../../../models/group";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
@@ -109,9 +109,11 @@ class ModalStudent extends React.Component<
     groupList.length &&
       groupList.forEach(groupNum => {
         const groupId = data[`groupId${groupNum}`];
-        const studentData = student && student[groupNum];
+        const studentData: IStudentGroup = student && student[groupNum];
+
         items[groupId] = {
           _id: groupId,
+          purchaseDate: studentData ? studentData.purchaseDate : new Date(),
           numberLessons: +data[`numLesson${groupNum}`],
           attended: studentData ? studentData.attended : [],
           miss: studentData ? studentData.miss : [],

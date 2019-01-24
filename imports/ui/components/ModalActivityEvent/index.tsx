@@ -8,8 +8,16 @@ import { IActivity } from "../../../models/activity";
 import ModalForm from "../ModalFrom";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
-import { eventsToDisabledTimes, getEventsQuery } from "../../../helpers/events";
-import { formatDbToMoment, setToMidnight } from "../../../helpers/time";
+import {
+  eventsToDisabledTimes,
+  getEventsQuery,
+  getNearestEvent
+} from "../../../helpers/events";
+import {
+  formatDbToMoment,
+  setToMidnight,
+  getEndTime
+} from "../../../helpers/time";
 
 import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
@@ -57,6 +65,7 @@ interface IProps {
   event?: IEvent;
   activity: IActivity;
   futureEvents?: IEvent[];
+  nearestEvent: IEvent;
 }
 
 const name = "element-activity";
@@ -65,6 +74,7 @@ let queryDate = new ReactiveVar([]);
 let queryAuditoryId = new ReactiveVar(null);
 let queryTeachersId = new ReactiveVar(null);
 let queryFutureEvents = new ReactiveVar(null);
+let queryStartTime = new ReactiveVar(null);
 
 interface IState {
   dateList: number[];
@@ -129,7 +139,6 @@ class ModalActivityEvent extends React.Component<
       this.createEvents(activity, numClasses, data, date);
       dateList.forEach(dateNum => {
         const newDate = setToMidnight(data[`date${dateNum}`]);
-        //console.log("newDate", newDate);
         this.createEvents(activity, numClasses, data, newDate);
       });
     }
@@ -175,6 +184,44 @@ class ModalActivityEvent extends React.Component<
     return minutes;
   };
 
+  startTimeSet = (startTime: moment.Moment) => {};
+
+  getDisabledTime = (hour: number): number[] => {
+    const { form, nearestEvent } = this.props;
+    const { timeStart }: any = form.getFieldsValue(["timeStart"]);
+    let minutes = this.getDisabledMinutes(hour);
+
+    if (!timeStart) return minutes;
+
+    if (hour < timeStart.hour()) {
+      const minutesBefore = Array.from({ length: 60 }, (v, i) => i);
+      return minutes.concat(minutesBefore);
+    }
+    if (hour === timeStart.hour()) {
+      const minutesBefore = Array.from(
+        { length: timeStart.minutes() + 1 },
+        (v, i) => i
+      );
+      return minutes.concat(minutesBefore);
+    }
+
+    if (!nearestEvent) return;
+
+    const eventStartTime = nearestEvent.beginDate;
+
+    if (hour === eventStartTime.getHours()) {
+      for (let i = eventStartTime.getMinutes(); i < 60; i++) {
+        minutes.push(i);
+      }
+      return minutes;
+    }
+
+    if (hour > eventStartTime.getHours()) {
+      const lastMinutes = Array.from({ length: 60 }, (v, i) => i);
+      return minutes.concat(lastMinutes);
+    }
+  };
+
   checkTimeStatus = (rule, value, callback) => {
     const { timeStart, timeEnd }: any = this.props.form.getFieldsValue([
       "timeStart",
@@ -182,10 +229,28 @@ class ModalActivityEvent extends React.Component<
     ]);
 
     if (timeStart && timeEnd && timeStart > timeEnd) {
-      callback(true);
-    } else {
-      callback();
+      callback(true); // error state
     }
+    callback();
+  };
+
+  checkEndTime = (rule, value, callback) => {
+    const { form, nearestEvent } = this.props;
+    const { timeEnd }: any = form.getFieldsValue(["timeEnd"]);
+
+    if (!nearestEvent) callback();
+
+    const eventStartTime = nearestEvent.beginDate;
+
+    if (timeEnd.hour() > eventStartTime.getHours()) callback(true);
+
+    if (
+      timeEnd.hour() === eventStartTime.getHours() &&
+      timeEnd.minutes() >= eventStartTime.getMinutes()
+    )
+      callback(true);
+
+    callback();
   };
 
   addDateField = () => {
@@ -233,6 +298,8 @@ class ModalActivityEvent extends React.Component<
   onAuditoryChange = newAuditory => queryAuditoryId.set(newAuditory);
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
   onTeacherChange = teachers => queryTeachersId.set(teachers);
+  onStartTimeChange = (time: moment.Moment) =>
+    queryStartTime.set(time.toDate());
 
   getAuditoryComment = (auditoryId: string) =>
     this.props.auditories.find(
@@ -242,7 +309,7 @@ class ModalActivityEvent extends React.Component<
   render() {
     const { form, modal, event, auditories, teachers } = this.props;
     const { dateList } = this.state;
-    const { getFieldDecorator } = form;
+    const { getFieldDecorator, getFieldValue } = form;
 
     const modalKind = modal.extra;
     const isLoading = modalKind && !event;
@@ -253,8 +320,11 @@ class ModalActivityEvent extends React.Component<
     const auditoryID = queryAuditoryId.get();
     const auditoryComment = auditoryID && this.getAuditoryComment(auditoryID);
 
+    const startTime = getFieldValue("timeStart");
     const beginTime = event && event && formatDbToMoment(event.timeStart);
-    const endTime = event && event && formatDbToMoment(event.timeEnd);
+    const endTime = event
+      ? formatDbToMoment(event.timeEnd)
+      : (startTime && getEndTime(startTime)) || null;
 
     const dateFields = this.getDatesFields(dateList);
 
@@ -332,6 +402,7 @@ class ModalActivityEvent extends React.Component<
               <TimePicker
                 disabledMinutes={this.getDisabledMinutes}
                 hideDisabledOptions
+                onChange={this.onStartTimeChange}
                 popupClassName={cx("time-picker__popup")}
                 className={cx("time-picker")}
                 format="HH:mm"
@@ -347,13 +418,13 @@ class ModalActivityEvent extends React.Component<
               rules: [
                 { required: true, message: "Выберете время" },
                 {
-                  validator: this.checkTimeStatus,
-                  message: "Время окончания не может быть раньше начала"
+                  validator: this.checkEndTime,
+                  message: "Это время уже занятно. Поставьте пораньше"
                 }
               ]
             })(
               <TimePicker
-                disabledMinutes={this.getDisabledMinutes}
+                disabledMinutes={this.getDisabledTime}
                 hideDisabledOptions
                 popupClassName={cx("time-picker__popup")}
                 className={cx("time-picker")}
@@ -397,23 +468,46 @@ export default compose(
     const activity: any = Activities.findOne({ _id: modal.groupId });
     const date = queryDate.get() || (event && event.date);
     const teacherId = queryTeachersId.get() || (event && event.teachersId);
-    const eventsQuery = getEventsQuery({
-      date,
-      auditoryId: queryAuditoryId.get(),
-      teacherId
-    });
+    const numClasses = activity && (activity.numberOfClasses || 10);
+
+    const events = Events.find(
+      getEventsQuery({
+        date,
+        auditoryId: queryAuditoryId.get(),
+        teacherId,
+        numClasses
+      })
+    ).fetch();
+
     const isFutureEvents = queryFutureEvents.get();
     const futureEvents =
       isFutureEvents &&
       Events.find({ date: { $gt: date } }, { sort: { date: 1 } }).fetch();
 
+    const auditories = Auditories.find().fetch();
+
+    let nearestEvent;
+    const eventStartTime = queryStartTime.get();
+
+    let startTime;
+    if (eventStartTime) {
+      startTime = eventStartTime;
+    } else if (event) {
+      startTime = event.beginDate;
+    }
+
+    if (startTime && events) {
+      nearestEvent = getNearestEvent(startTime, events);
+    }
+
     return {
       event,
-      auditories: Auditories.find().fetch(),
+      auditories,
       teachers: Teachers.find().fetch(),
-      events: Events.find(eventsQuery).fetch(),
+      events,
       activity,
-      futureEvents
+      futureEvents,
+      nearestEvent
     };
   })
 )(modal);
