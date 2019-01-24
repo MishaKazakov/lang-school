@@ -1,9 +1,10 @@
 import * as React from "react";
 import Layout from "../../components/Layout";
 import StudentGroup from "../../components/StudentGroup";
-import { IStudent } from "../../../models/student";
+import { IStudent, IStatus, IStudentGroup } from "../../../models/student";
 import { IEvent } from "../../../models/event";
 import { formatTime } from "../../../helpers/string";
+import { isIncludes } from "../../../helpers/events";
 import * as qs from "query-string";
 
 import { Location, History } from "history";
@@ -41,13 +42,13 @@ class Attendance extends React.Component<IProps> {
     const eventId = event._id;
 
     students.forEach(student => {
-      const studentGroup = student.group[groupId];
+      const studentGroup: IStudentGroup = student.group[groupId];
       if (!studentGroup) {
         return;
       }
-      if (studentGroup.miss.includes(eventId)) {
+      if (isIncludes(studentGroup.miss, eventId)) {
         missed.push(student);
-      } else if (studentGroup.canceled.includes(eventId)) {
+      } else if (isIncludes(studentGroup.canceled, eventId)) {
         canceled.push(student);
       } else {
         attended.push(student);
@@ -72,25 +73,33 @@ class Attendance extends React.Component<IProps> {
     const groupId = event.groupId;
     const group = student.group[groupId];
     const eventId = event._id;
+    const eventStat = { id: eventId, date: event.date };
 
-    if (group.miss.includes(eventId)) {
-      group.miss = group.miss.filter(id => id != eventId);
-      group.attended.push(eventId);
+    if (isIncludes(group.miss, eventId)) {
+      group.miss = group.miss.filter((status: IStatus) => status.id != eventId);
+      group.attended.push(eventStat);
+
       this.updateStudent(student, groupId, group);
       this.forceUpdate();
       return;
     }
 
-    if (group.canceled.includes(eventId)) {
-      group.canceled = group.canceled.filter(id => id != eventId);
-      group.miss.push(eventId);
+    if (isIncludes(group.canceled, eventId)) {
+      group.canceled = group.canceled.filter(
+        (status: IStatus) => status.id != eventId
+      );
+      group.miss.push(eventStat);
+
       this.updateStudent(student, groupId, group);
       this.forceUpdate();
       return;
     }
 
-    group.attended = group.attended.filter(id => id != eventId);
-    group.canceled.push(eventId);
+    group.attended = group.attended.filter(
+      (status: IStatus) => status.id != eventId
+    );
+    group.canceled.push(eventStat);
+
     this.updateStudent(student, groupId, group);
     this.forceUpdate();
   };
@@ -101,25 +110,33 @@ class Attendance extends React.Component<IProps> {
     const groupId = event.groupId;
     const group = student.group[groupId];
     const eventId = event._id;
+    const eventStat = { id: eventId, date: event.date };
 
-    if (group.miss.includes(eventId)) {
-      group.miss = group.miss.filter(id => id != eventId);
-      group.canceled.push(eventId);
+    if (isIncludes(group.miss, eventId)) {
+      group.miss = group.miss.filter((status: IStatus) => status.id != eventId);
+      group.canceled.push(eventStat);
+
       this.updateStudent(student, groupId, group);
       this.forceUpdate();
       return;
     }
 
-    if (group.canceled.includes(eventId)) {
-      group.canceled = group.canceled.filter(id => id != eventId);
-      group.attended.push(eventId);
+    if (isIncludes(group.canceled, eventId)) {
+      group.canceled = group.miss.filter(
+        (status: IStatus) => status.id != eventId
+      );
+      group.attended.push(eventStat);
+
       this.updateStudent(student, groupId, group);
       this.forceUpdate();
       return;
     }
 
-    group.attended = group.attended.filter(id => id != eventId);
-    group.miss.push(eventId);
+    group.attended = group.miss.filter(
+      (status: IStatus) => status.id != eventId
+    );
+    group.miss.push(eventStat);
+
     this.updateStudent(student, groupId, group);
     this.forceUpdate();
   };
@@ -135,7 +152,7 @@ class Attendance extends React.Component<IProps> {
     const time = event && formatTime(event.timeStart);
     const day = event && event.date;
     const dayTittle =
-      event && `${day.getDay()}.${day.getMonth() + 1}.${day.getFullYear()}`;
+      event && `${day.getDate()}.${day.getMonth() + 1}.${day.getFullYear()}`;
     const eventName = event ? event.name : "";
 
     return (

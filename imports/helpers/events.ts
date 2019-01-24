@@ -1,6 +1,7 @@
 import { IEvent } from "../models/event";
 import * as moment from "moment";
 import { setToMidnight } from "./time";
+import { IStatus } from "../models/student";
 
 export function eventsToDisabledTimes(events: IEvent[]) {
   const times = {};
@@ -46,17 +47,24 @@ interface IEventQuery {
   auditoryId: string;
   teacherId: string;
   _id?: string;
+  numClasses: number;
 }
 
 export function getEventsQuery(data: IEventQuery) {
-  const { date: dataDate, auditoryId, teacherId, _id } = data;
+  const { date: dataDate, auditoryId, teacherId, _id, numClasses } = data;
   const teachersId = Array.isArray(teacherId) ? { $in: teacherId } : teacherId;
   let date;
+
   if (Array.isArray(dataDate)) {
-    const dates = dataDate.map(newDate => setToMidnight(newDate));
+    let dates = [];
+    dataDate.forEach(newDate => {
+      const nextDays = getNextDays(numClasses, newDate);
+      dates = dates.concat(nextDays);
+    });
     date = { $in: dates };
   } else {
-    date = setToMidnight(dataDate);
+    const dates = getNextDays(numClasses, dataDate);
+    date = { $in: dates };
   }
 
   return {
@@ -65,3 +73,28 @@ export function getEventsQuery(data: IEventQuery) {
     $or: [{ auditoryId }, { teachersId: teachersId }]
   };
 }
+
+const getNextDays = (numWeeks, date) =>
+  Array.from({ length: numWeeks }, (v, i) => {
+    const nextDate = moment(date);
+    nextDate.add(7 * i, "days");
+    return setToMidnight(nextDate);
+  });
+
+export function getNearestEvent(startTime: Date, events: any[]) {
+  let nearestEvent;
+  let timeSegment = 86400000;
+
+  events.forEach((event: IEvent) => {
+    const timeDif = event.beginDate.getTime() - startTime.getTime();
+    if (timeDif > 0 && timeDif < timeSegment) {
+      nearestEvent = event;
+      timeSegment = timeDif;
+    }
+  });
+
+  return nearestEvent;
+}
+
+export const isIncludes = (subGroup: IStatus[], id: string) =>
+  subGroup.some((group: IStatus) => group.id === id);

@@ -14,7 +14,13 @@ export interface IStudent {
 export interface IStudentGroup {
   _id: string;
   numberLessons: number;
-  attended: string[];
-  miss: string[];
-  canceled: string[];
+  attended: IStatus[];
+  miss: IStatus[];
+  canceled: IStatus[];
+  purchaseDate: Date;  
+}
+
+export interface IStatus {
+  id: string;
+  date: Date;
 }
