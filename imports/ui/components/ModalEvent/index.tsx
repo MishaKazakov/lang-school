@@ -24,6 +24,7 @@ import { closeModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
 import { Teachers } from "../../../api/teachers";
+import { Students } from "../../../api/students";
 import { Groups } from "../../../api/groups";
 import {
   Events,
@@ -190,7 +191,7 @@ class ModalEvent extends React.Component<
     }
 
     if (!nearestEvent) return;
-    
+
     const eventStartTime = nearestEvent.beginDate;
 
     if (hour === eventStartTime.getHours()) {
@@ -293,6 +294,30 @@ class ModalEvent extends React.Component<
       (auditory: IAuditory) => auditory._id === auditoryId
     ).comment;
 
+  checkAuditoryCapacity = (rule, value, callback) => {
+    const auditoryId = value;
+
+    if (!auditoryId) {
+      callback();
+      return;
+    }
+
+    const { auditories, group } = this.props;
+    const auditory = auditories.find(
+      (auditory: IAuditory) => auditory._id === auditoryId
+    );
+
+    const studentsInGroup = Students.find({
+      [`group.${group._id}`]: { $exists: true }
+    }).count();
+
+    if (studentsInGroup > auditory.capacity) {
+      callback(true);
+    } else {
+      callback();
+    }
+  };
+
   render() {
     const { form, modal, event, teacher } = this.props;
     const { dateList } = this.state;
@@ -358,7 +383,15 @@ class ModalEvent extends React.Component<
         >
           <FormItem label="Аудитория" hasFeedback>
             {getFieldDecorator("auditoryId", {
-              initialValue: event ? event.auditoryId : ""
+              initialValue: event ? event.auditoryId : "",
+              validateTrigger: ["onChange"],
+              rules: [
+                {
+                  validator: this.checkAuditoryCapacity,
+                  message:
+                    "Вместимость аудитории меньше количества студентов в группе"
+                }
+              ]
             })(
               <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
             )}

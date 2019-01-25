@@ -229,10 +229,15 @@ export default compose(
   withRouter,
   withTracker<any, IProps>(props => {
     const { skip, sort, search } = getParams(props);
+    const students = Students.find(
+      { ...search },
+      { skip, limit: 10, sort }
+    ).fetch();
+    const total = search ? students.length : Students.find().count();
 
     return {
-      students: Students.find({ ...search }, { skip, limit: 10, sort }).fetch(),
-      total: Students.find().count(),
+      students,
+      total,
       groups: Groups.find().fetch()
     };
   })

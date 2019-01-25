@@ -210,7 +210,7 @@ class ModalStudent extends React.Component<
               rules: [
                 { required: true, message: "Введите фамилию" },
                 {
-                  pattern: /[(A-Za-z)|(А-Яа-я)]+$/,
+                  pattern: /^[(A-Za-z)|(А-Яа-я)]+$/,
                   message: "Допустимы только буквы"
                 }
               ]
@@ -225,7 +225,7 @@ class ModalStudent extends React.Component<
               rules: [
                 { required: true, message: "Введите имя" },
                 {
-                  pattern: /[(A-Za-z)|(А-Яа-я)]+$/,
+                  pattern: /^[(A-Za-z)|(А-Яа-я)]+$/,
                   message: "Допустимы только буквы"
                 }
               ]
@@ -239,7 +239,7 @@ class ModalStudent extends React.Component<
               validateTrigger: ["onBlur", "onChange"],
               rules: [
                 {
-                  pattern: /[(A-Za-z)|(А-Яа-я)]+$/,
+                  pattern: /^[(A-Za-z)|(А-Яа-я)]+$/,
                   message: "Допустимы только буквы"
                 }
               ]
