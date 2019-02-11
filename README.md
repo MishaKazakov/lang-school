@@ -1,7 +1,8 @@
 # About
 Проект создан для автоматизации управления школы иностранных языков.
 
-Возможности:
+# Возможности
+
 Создание и редактирования: 
 1. Групп.
 2. Мероприятий.
@@ -17,10 +18,12 @@
 
 # Demo
 https://project-english-school.herokuapp.com/login
+
 логин: admin@admin.com
+
 пароль: qwerty
 
-#Технологии
+# Технологии
 1. Meteor.
 1. React, Redux.
 1. TypeScript, SCSS.
