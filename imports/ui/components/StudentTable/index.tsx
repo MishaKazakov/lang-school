@@ -6,7 +6,7 @@ import * as qs from "query-string";
 import { Location, History } from "history";
 import { withRouter, match } from "react-router";
 import { compose } from "redux";
-import ModelStudentStatistic from "../ModelStudentStatistic";
+import ModalStudentStatistic from "../../modals/ModalStudentStatistic";
 
 import { Students } from "../../../api/students";
 import { Groups } from "../../../api/groups";
@@ -148,7 +148,7 @@ class StudentTable extends React.Component<IProps, IState> {
 
     return (
       <>
-        <ModelStudentStatistic
+        <ModalStudentStatistic
           visible={visibleStatistic}
           id={studentId}
           onClose={this.closeStatistic}

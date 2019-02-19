@@ -3,9 +3,9 @@ import { ISwitch } from "../../../models/switch";
 import { IStore } from "../../../models/store";
 import { IAuditory } from "../../../models/auditory";
 import { IEvent, IEventForm } from "../../../models/event";
+import { IGroup } from "../../..//models/group";
 import { ITeacher } from "../../../models/teacher";
-import { IActivity } from "../../../models/activity";
-import ModalForm from "../ModalFrom";
+import ModalForm from "../ModalForm";
 import * as moment from "moment";
 import { ReactiveVar } from "meteor/reactive-var";
 import {
@@ -23,8 +23,9 @@ import { connect } from "react-redux";
 import { closeModal } from "../../reducers/modalReducer";
 
 import { Auditories } from "../../../api/auditories";
-import { Activities } from "../../../api/activities";
 import { Teachers } from "../../../api/teachers";
+import { Students } from "../../../api/students";
+import { Groups } from "../../../api/groups";
 import {
   Events,
   createEvent,
@@ -38,7 +39,7 @@ import { withTracker } from "meteor/react-meteor-data";
 
 import { FormComponentProps as FormProps } from "antd/lib/form";
 
-import Button from "../Button";
+import Button from "../../components/Button";
 const Form = require("antd/lib/form");
 const FormItem = Form.Item;
 const Select = require("antd/lib/select");
@@ -61,18 +62,17 @@ interface IDispatchFromProps {
 interface IProps {
   auditories?: IAuditory[];
   events?: IEvent[];
-  teachers: ITeacher[];
   event?: IEvent;
-  activity: IActivity;
+  group: IGroup;
   futureEvents?: IEvent[];
   nearestEvent: IEvent;
+  teacher?: ITeacher;
 }
 
-const name = "element-activity";
+const name = "element-group";
 
 let queryDate = new ReactiveVar([]);
 let queryAuditoryId = new ReactiveVar(null);
-let queryTeachersId = new ReactiveVar(null);
 let queryFutureEvents = new ReactiveVar(null);
 let queryStartTime = new ReactiveVar(null);
 
@@ -80,14 +80,16 @@ interface IState {
   dateList: number[];
 }
 
-class ModalActivityEvent extends React.Component<
+class ModalEvent extends React.Component<
   IStateToProps & IDispatchFromProps & FormProps & IProps,
   IState
 > {
   constructor(props) {
     super(props);
 
-    this.state = { dateList: [] };
+    this.state = {
+      dateList: []
+    };
   }
 
   onClose = () => {
@@ -99,69 +101,42 @@ class ModalActivityEvent extends React.Component<
     this.setState({ dateList: [] });
     queryDate.set([]);
     queryAuditoryId.set(null);
-    queryTeachersId.set(null);
     queryFutureEvents.set(null);
   };
 
   onSubmit = (data: IEventForm) => {
-    const { event, futureEvents, activity } = this.props;
+    const { event, futureEvents, group } = this.props;
     const { dateList } = this.state;
     const id = event && event._id;
-    const forFuture = data.forFuture;
     const date: Date = setToMidnight(data.date);
 
     if (id) {
-      updateEvent({
-        data,
-        group: activity,
-        date,
-        event,
-        referenceable: forFuture
-      });
+      updateEvent({ data, group, date, event, referenceable: data.forFuture });
 
       date.setDate(date.getDate() + 7);
-      forFuture &&
+      futureEvents &&
         futureEvents.forEach((event, i) => {
-          const nextDay = new Date(date);
-          nextDay.setDate(nextDay.getDate() + 7 * i);
-
-          updateEvent({ data, group: activity, date: nextDay, event });
+          const nextDate = new Date(date);
+          nextDate.setDate(nextDate.getDate() + 7 * i);
+          updateEvent({ data, group, date: nextDate, event });
         });
     } else {
-      let numClasses = 1;
-      if (activity.isInfinite) {
-        numClasses = 10;
-      } else if (activity.numberOfClasses) {
-        numClasses = activity.numberOfClasses;
-      }
-
-      this.createEvents(activity, numClasses, data, date);
+      this.createEvents(data, group, date);
       dateList.forEach(dateNum => {
         const newDate = setToMidnight(data[`date${dateNum}`]);
-        this.createEvents(activity, numClasses, data, newDate);
+        this.createEvents(data, group, newDate);
       });
     }
   };
 
-  createEvents = (activity, numClasses, data, date) => {
-    createEvent({
-      data,
-      group: activity,
-      date,
-      referenceable: true,
-      isActivity: true
-    });
+  createEvents = (data, group, date) => {
+    const numClasses = group.numberOfClasses || 10;
+    createEvent({ data, group, date, referenceable: true });
 
     for (let i = 1; i < numClasses; i++) {
-      const nextDay = moment(date);
-      nextDay.add(7 * i, "days");
-
-      createEvent({
-        data,
-        group: activity,
-        date: nextDay.toDate(),
-        isActivity: true
-      });
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 7 * i);
+      createEvent({ data, group, date: nextDate });
     }
   };
 
@@ -172,14 +147,14 @@ class ModalActivityEvent extends React.Component<
     deleteFutureEvents(event);
   };
 
-  getSelectItems = items =>
-    items.map(item => (
-      <Option key={item._id} value={item._id}>
-        {item.name ? item.name : `${item.lastName} ${item.firstName}`}
+  getAuditoryItems = () =>
+    this.props.auditories.map(auditory => (
+      <Option key={auditory._id} value={auditory._id}>
+        {auditory.name}
       </Option>
     ));
 
-  getDisabledMinutes = (hour: number) => {
+  getDisabledMinutes = (hour: number): number[] => {
     let minutes = [];
     const intervals = eventsToDisabledTimes(this.props.events)[hour];
 
@@ -240,6 +215,7 @@ class ModalActivityEvent extends React.Component<
 
     if (timeStart && timeEnd && timeStart > timeEnd) {
       callback(true); // error state
+      return;
     }
     callback();
   };
@@ -310,7 +286,6 @@ class ModalActivityEvent extends React.Component<
   };
   onAuditoryChange = newAuditory => queryAuditoryId.set(newAuditory);
   onChangeFutureEvents = e => queryFutureEvents.set(e.target.checked);
-  onTeacherChange = teachers => queryTeachersId.set(teachers);
   onStartTimeChange = (time: moment.Moment) =>
     queryStartTime.set(time.toDate());
 
@@ -319,27 +294,53 @@ class ModalActivityEvent extends React.Component<
       (auditory: IAuditory) => auditory._id === auditoryId
     ).comment;
 
+  checkAuditoryCapacity = (rule, value, callback) => {
+    const auditoryId = value;
+
+    if (!auditoryId) {
+      callback();
+      return;
+    }
+
+    const { auditories, group } = this.props;
+    const auditory = auditories.find(
+      (auditory: IAuditory) => auditory._id === auditoryId
+    );
+
+    const studentsInGroup = Students.find({
+      [`group.${group._id}`]: { $exists: true }
+    }).count();
+
+    if (studentsInGroup > auditory.capacity) {
+      callback(true);
+    } else {
+      callback();
+    }
+  };
+
   render() {
-    const { form, modal, event, auditories, teachers } = this.props;
+    const { form, modal, event, teacher } = this.props;
     const { dateList } = this.state;
     const { getFieldDecorator, getFieldValue } = form;
 
     const modalKind = modal.extra;
     const isLoading = modalKind && !event;
 
-    const auditoryItems = this.getSelectItems(auditories);
-    const teacherItems = this.getSelectItems(teachers);
+    const auditoryItems = this.getAuditoryItems();
 
     const auditoryID = queryAuditoryId.get();
     const auditoryComment = auditoryID && this.getAuditoryComment(auditoryID);
 
     const startTime = getFieldValue("timeStart");
-    const beginTime = event && event && formatDbToMoment(event.timeStart);
+    const beginTime = event && formatDbToMoment(event.timeStart);
     const endTime = event
       ? formatDbToMoment(event.timeEnd)
       : (startTime && getEndTime(startTime)) || null;
 
     const dateFields = this.getDatesFields(dateList);
+    const teacherName = teacher
+      ? `${teacher.firstName} ${teacher.lastName}`
+      : "";
 
     return (
       <ModalForm
@@ -348,9 +349,14 @@ class ModalActivityEvent extends React.Component<
         onClose={this.onClose}
         onSubmit={this.onSubmit}
         onDelete={this.onDelete}
-        isEdit={modalKind}
         isLoading={isLoading}
+        isEdit={modalKind}
       >
+        {modalKind && (
+          <div className={cx("form__subtitle")}>
+            Преподаватель {teacherName}
+          </div>
+        )}
         <div
           className={cx("from__item form__date", {
             "form__no-margin": !modalKind
@@ -372,25 +378,20 @@ class ModalActivityEvent extends React.Component<
             </Button>
           </div>
         )}
-        <div className={cx("from__item")}>
-          <FormItem label="Преподаватели" hasFeedback>
-            {getFieldDecorator("teachersId", {
-              initialValue: event ? event.teachersId : undefined
-            })(
-              <Select mode="multiple" onChange={this.onTeacherChange}>
-                {teacherItems}
-              </Select>
-            )}
-          </FormItem>
-        </div>
         <div
           className={cx("from__item", { "form__no-margin": !!auditoryComment })}
         >
           <FormItem label="Аудитория" hasFeedback>
             {getFieldDecorator("auditoryId", {
               initialValue: event ? event.auditoryId : "",
-              validateTrigger: ["onBlur", "onChange"],
-              rules: [{ required: true, message: "Выберите аудитрию" }]
+              validateTrigger: ["onChange"],
+              rules: [
+                {
+                  validator: this.checkAuditoryCapacity,
+                  message:
+                    "Вместимость аудитории меньше количества студентов в группе"
+                }
+              ]
             })(
               <Select onChange={this.onAuditoryChange}>{auditoryItems}</Select>
             )}
@@ -399,6 +400,7 @@ class ModalActivityEvent extends React.Component<
             <div className={cx("form__comment")}>{auditoryComment}</div>
           )}
         </div>
+
         <div className={cx("from__item")}>
           <FormItem label="Время начала" hasFeedback>
             {getFieldDecorator("timeStart", {
@@ -415,15 +417,17 @@ class ModalActivityEvent extends React.Component<
               <TimePicker
                 disabledMinutes={this.getDisabledMinutes}
                 hideDisabledOptions
-                onChange={this.onStartTimeChange}
                 popupClassName={cx("time-picker__popup")}
+                onChange={this.onStartTimeChange}
                 className={cx("time-picker")}
                 format="HH:mm"
               />
             )}
           </FormItem>
         </div>
-        <div className={cx("from__item")}>
+        <div
+          className={cx("from__item", { "form__item_last-elem": !modalKind })}
+        >
           <FormItem label="Время окончания" hasFeedback>
             {getFieldDecorator("timeEnd", {
               initialValue: endTime,
@@ -452,7 +456,7 @@ class ModalActivityEvent extends React.Component<
               "from__item form__item_last-elem form__item__checkbox"
             )}
           >
-            <FormItem label="Изменить последующие мероприятия" hasFeedback>
+            <FormItem label="Изменить последующие занятия" hasFeedback>
               {getFieldDecorator("forFuture")(
                 <Checkbox onChange={this.onChangeFutureEvents} />
               )}
@@ -464,7 +468,7 @@ class ModalActivityEvent extends React.Component<
   }
 }
 
-const modal = Form.create()(ModalActivityEvent);
+const modal = Form.create()(ModalEvent);
 
 export default compose(
   connect<IStateToProps, IDispatchFromProps>(
@@ -478,25 +482,24 @@ export default compose(
   withTracker<any, IProps & IStateToProps>(({ modal }) => {
     const _id = modal.extra;
     const event: any = _id && Events.findOne({ _id });
-    const activity: any = Activities.findOne({ _id: modal.groupId });
+    const group: any = Groups.findOne({ _id: modal.groupId });
     const date = queryDate.get() || (event && event.date);
-    const teacherId = queryTeachersId.get() || (event && event.teachersId);
-    const numClasses = activity && (activity.numberOfClasses || 10);
-
-    const events = Events.find(
-      getEventsQuery({
-        date,
-        auditoryId: queryAuditoryId.get(),
-        teacherId,
-        numClasses
-      })
-    ).fetch();
-
+    const teacher = event && Teachers.findOne({ _id: event.teachersId });
     const isFutureEvents = queryFutureEvents.get();
     const futureEvents =
       isFutureEvents &&
       Events.find({ date: { $gt: date } }, { sort: { date: 1 } }).fetch();
+    const numClasses = group && (group.numberOfClasses || 10);
 
+    const events = Events.find(
+      getEventsQuery({
+        _id,
+        date,
+        auditoryId: queryAuditoryId.get(),
+        teacherId: group && group.teacherId,
+        numClasses
+      })
+    ).fetch();
     const auditories = Auditories.find().fetch();
 
     let nearestEvent;
@@ -516,9 +519,9 @@ export default compose(
     return {
       event,
       auditories,
-      teachers: Teachers.find().fetch(),
       events,
-      activity,
+      group,
+      teacher,
       futureEvents,
       nearestEvent
     };

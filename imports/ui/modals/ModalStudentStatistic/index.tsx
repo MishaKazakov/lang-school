@@ -2,7 +2,7 @@ import * as React from "react";
 import { withTracker } from "meteor/react-meteor-data";
 import { IStudent, IStudentGroup, IStatus } from "../../../models/student";
 import { IGroup } from "../../../models/group";
-import Button from "../Button";
+import Button from "../../components/Button";
 import { Students } from "../../../api/students";
 import { Groups } from "../../../api/groups";
 import { dateString } from "../../../helpers/time";
@@ -22,7 +22,7 @@ interface IProps {
   groups?: IGroup[];
 }
 
-class ModelStudentStatistic extends React.Component<IProps> {
+class ModalStudentStatistic extends React.Component<IProps> {
   render() {
     const { visible, student, groups } = this.props;
     const title =
@@ -154,4 +154,4 @@ export default withTracker<any, IProps>(({ id: _id }) => {
       _id: { $in: studentGroupIds }
     }).fetch()
   };
-})(ModelStudentStatistic);
+})(ModalStudentStatistic);

@@ -6,7 +6,7 @@ import { IStore } from "../../../models/store";
 import { ITeacher, ITeacherForm } from "../../../models/teacher";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
-import ModalForm from "../ModalFrom";
+import ModalForm from "../ModalForm";
 
 import { Teachers } from "../../../api/teachers";
 

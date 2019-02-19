@@ -8,7 +8,7 @@ import { IEvent } from "../../../models/event";
 import { IStudent } from "../../../models/student";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
-import ModalForm from "../ModalFrom";
+import ModalForm from "../ModalForm";
 import * as moment from "moment";
 
 import { Groups } from "../../../api/groups";

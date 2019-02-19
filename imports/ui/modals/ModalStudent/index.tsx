@@ -6,8 +6,8 @@ import { IStudent, IStudentGroup } from "../../../models/student";
 import { IGroup } from "../../../models/group";
 import { closeModal } from "../../reducers/modalReducer";
 import { FormComponentProps as FormProps } from "antd/lib/form";
-import ModalForm from "../ModalFrom";
-import Button from "../Button";
+import ModalForm from "../ModalForm";
+import Button from "../../components/Button";
 
 import { Students } from "../../../api/students";
 import { Groups } from "../../../api/groups";

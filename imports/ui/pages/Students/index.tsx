@@ -3,7 +3,7 @@ import Layout from "../../components/Layout";
 import StudentTable from "../../components/StudentTable";
 import { connect } from "react-redux";
 import { openModal } from "../../reducers/modalReducer";
-import ModalStudent from "../../components/ModalStudent";
+import ModalStudent from "../../modals/ModalStudent";
 import Button from "../../components/Button";
 const cx = require("classnames/bind").bind(require("./style.scss"));
 
